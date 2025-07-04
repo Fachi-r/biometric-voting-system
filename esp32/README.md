@@ -12,6 +12,26 @@ This directory contains firmware code for the ESP32.
   - Custom retry logic for fingerprint template download
   - Removal of timeouts in initial finger placement loops
   - Reconnection logic to handle Wi-Fi and MQTT dropouts
+  
+## Environment Variables
+Create `secrets.h`:
+
+```cpp
+#ifndef SECRETS_H
+#define SECRETS_H
+
+// WiFi credentials
+#define WIFI_SSID     "yourWifi"
+#define WIFI_PASSWORD "yourPassword"
+
+// MQTT credentials
+#define MQTT_SERVER   "mqttServerUrl.cloud"
+#define MQTT_PORT     8883
+#define MQTT_USERNAME "yourMqttUser"
+#define MQTT_PASSWORD "yourMqttPass"
+
+#endif
+```
 
 ## How It Works
 1. Connects to Wi-Fi and the MQTT broker.
