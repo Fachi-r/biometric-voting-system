@@ -1,0 +1,13 @@
+{
+  "name": "project-root",
+  "private": true,
+  "scripts": {
+    "dev:frontend": "pnpm --filter frontend dev",
+    "dev:server": "pnpm --filter server dev",
+    "dev:blockchain": "pnpm --filter blockchain hardhat node",
+    "dev": "concurrently \"pnpm dev:frontend\" \"pnpm dev:server\" \"pnpm dev:blockchain\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  }
+}

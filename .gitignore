@@ -1,0 +1,65 @@
+# Node modules everywhere
+**/node_modules/
+
+# pnpm lockfile
+pnpm-lock.yaml
+
+# Build outputs
+**/dist/
+**/build/
+**/.next/
+**/.vite/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Env files
+**/.env
+**/.env.*.local
+**/.env.local
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Mac junk
+.DS_Store
+
+# Frontend specific
+/frontend/.cache/
+frontend/.turbo/
+
+# Backend specific
+/server/.cache/
+
+# Hardhat artifacts
+/blockchain/artifacts/
+/blockchain/cache/
+/blockchain/typechain/
+/blockchain/deployments/
+
+# Arduino
+/esp32/*.bin
+/esp32/*.elf
+/esp32/*.hex
+/esp32/*.pyc
+/esp32/__pycache__/
+
+# Python
+/server/__pycache__/
+/server/*.pyc
+/server/.mypy_cache/
+.server/.pytest_cache/
+
+# Misc
+*.swp
+*.tmp
+*.bak
