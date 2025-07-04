@@ -44,7 +44,13 @@ frontend/.turbo/
 /blockchain/artifacts/
 /blockchain/cache/
 /blockchain/typechain/
+blockchain/typechain-types
 /blockchain/deployments/
+/blockchain/ignition/deployments/
+
+# solidity-coverage files
+/blockchain/coverage
+/blockchain/coverage.json
 
 # Arduino
 /esp32/*.bin
@@ -52,6 +58,7 @@ frontend/.turbo/
 /esp32/*.hex
 /esp32/*.pyc
 /esp32/__pycache__/
+/esp32/secrets.h
 
 # Python
 /server/__pycache__/
