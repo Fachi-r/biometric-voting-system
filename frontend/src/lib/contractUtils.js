@@ -1,7 +1,7 @@
 // src/lib/contractsUtil.js
 
 import { ethers } from 'ethers';
-import DappVotesABI from "blockchain/artifacts/contracts/DappVotes.sol/DappVotes.json";
+import DappVotesABI from "src/abi/DappVotes.json";
 
 // Replace with your deployed contract address
 const CONTRACT_ADDRESS = '0x1d3565abf6848fdfa99104b4a1324f97190ecf7a6eda6d76e7e89a277b74f8fe';

@@ -1,14 +1,16 @@
 const hre = require("hardhat");
 
 async function main() {
-  // Get the contract factory
-  const DappVotes = await hre.getContractFactory("DappVotes");
+  // Load the contract factory
+  const DappVotes = await hre.ethers.getContractFactory("DappVotes");
 
   // Deploy the contract
   const dappVotes = await DappVotes.deploy();
-  await dappVotes.deployed();
 
-  console.log(`✅ DappVotes deployed to: ${dappVotes.address}`);
+  // Wait for deployment to complete (Ethers v6+)
+  await dappVotes.waitForDeployment();
+
+  console.log(`✅ DappVotes deployed to: ${dappVotes.target}`);
 }
 
 main()
