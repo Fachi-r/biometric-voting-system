@@ -27,7 +27,7 @@ const AdminVoters: React.FC = () => {
   const [voters] = useState<Voter[]>([
     {
       id: '1',
-      name: 'ZIBA NYANGULU',
+      name: 'John Doe',
       email: 'john.doe@institution.edu',
       status: 'voted',
       registrationDate: '2024-12-01',
@@ -35,7 +35,7 @@ const AdminVoters: React.FC = () => {
     },
     {
       id: '2',
-      name: 'TWANGE CHANSA',
+      name: 'Jane Smith',
       email: 'jane.smith@institution.edu',
       status: 'registered',
       registrationDate: '2024-12-02',
@@ -43,7 +43,7 @@ const AdminVoters: React.FC = () => {
     },
     {
       id: '3',
-      name: 'FARAI FACHI',
+      name: 'Bob Johnson',
       email: 'bob.johnson@institution.edu',
       status: 'registered',
       registrationDate: '2024-12-03',
@@ -51,7 +51,7 @@ const AdminVoters: React.FC = () => {
     },
     {
       id: '4',
-      name: 'JEHU ',
+      name: 'Alice Brown',
       email: 'alice.brown@institution.edu',
       status: 'inactive',
       registrationDate: '2024-11-15',

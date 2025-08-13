@@ -52,21 +52,21 @@ const mockElections: Election[] = [
     candidates: [
       {
         id: '1',
-        name: 'Governor',
+        name: 'Alice Johnson',
         party: 'Democratic Party',
         photo: '/placeholder.svg',
         description: 'Experienced leader with focus on education and healthcare'
       },
       {
         id: '2',
-        name: 'Bene Ba Territory',
+        name: 'Bob Smith',
         party: 'Republican Party',
         photo: '/placeholder.svg',
         description: 'Business executive with strong economic policies'
       },
       {
         id: '3',
-        name: 'Chabu',
+        name: 'Carol Davis',
         party: 'Independent',
         photo: '/placeholder.svg',
         description: 'Environmental advocate and community organizer'

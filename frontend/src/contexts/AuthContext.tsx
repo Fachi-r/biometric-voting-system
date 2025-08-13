@@ -53,8 +53,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Mock user data based on biometric scan
       const mockUser: User = {
         id: '1',
-        name: 'TWANGE CHANSA',
-        email: 'twange.tc@institution.edu',
+        name: 'John Doe',
+        email: 'john.doe@institution.edu',
         role: biometricData?.isAdmin ? 'admin' : 'voter'
       };
 
