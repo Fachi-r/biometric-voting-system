@@ -4,8 +4,3 @@ onlyBuiltDependencies:
   - esbuild
   - keccak
   - utf-8-validate
-
-packages:
-  - 'frontend'
-  - 'blockchain'
-  - 'server'

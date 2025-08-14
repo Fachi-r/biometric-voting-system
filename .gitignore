@@ -70,3 +70,4 @@ blockchain/typechain-types
 *.swp
 *.tmp
 *.bak
+frontend/.env.example

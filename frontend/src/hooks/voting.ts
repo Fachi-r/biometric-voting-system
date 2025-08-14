@@ -1,178 +1,147 @@
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { VOTING_CONTRACT_ABI, VOTING_CONTRACT_ADDRESS, TARGET_CHAIN_ID } from '@/constants/votingContract';
-import { hardhat } from 'wagmi/chains';
-export type Poll = {
-  id: bigint;
-  image: string;
-  title: string;
-  description: string;
-  voteCount: bigint;
-  contestantCount: bigint;
-  deleted: boolean;
-  director: `0x${string}`;
-  startsAt: bigint;
-  endsAt: bigint;
-  createdAt: bigint;
-};
+import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+import { VOTING_CONTRACT_ABI, VOTING_CONTRACT_ADDRESS, TARGET_CHAIN_ID } from '@/constants/votingContract'
+import { useEffect } from 'react'
+import { toast } from '@/hooks/use-toast'
 
-export type Contestant = {
-  id: bigint;
-  image: string;
-  name: string;
-  account: `0x${string}`;
-  votes: bigint;
-};
-
-// Reads
+// Read Hooks
 export function usePolls() {
-  const res = useReadContract({
-    abi: VOTING_CONTRACT_ABI,
+  return useReadContract({
     address: VOTING_CONTRACT_ADDRESS,
+    abi: VOTING_CONTRACT_ABI,
     functionName: 'getPolls',
     chainId: TARGET_CHAIN_ID,
-  });
-  return res as typeof res & { data: Poll[] | undefined };
+  })
 }
 
-export function usePoll(pollId?: bigint) {
-  const res = useReadContract({
-    abi: VOTING_CONTRACT_ABI,
+export function usePoll(pollId: number) {
+  return useReadContract({
     address: VOTING_CONTRACT_ADDRESS,
+    abi: VOTING_CONTRACT_ABI,
     functionName: 'getPoll',
-    args: pollId !== undefined ? [pollId] : undefined,
+    args: [BigInt(pollId)],
     chainId: TARGET_CHAIN_ID,
-    query: { enabled: pollId !== undefined },
-  });
-  return res as typeof res & { data: Poll | undefined };
+    query: {
+      enabled: pollId > 0,
+    },
+  })
 }
 
-export function useContestants(pollId?: bigint) {
-  const res = useReadContract({
-    abi: VOTING_CONTRACT_ABI,
+export function useContestants(pollId: number) {
+  return useReadContract({
     address: VOTING_CONTRACT_ADDRESS,
+    abi: VOTING_CONTRACT_ABI,
     functionName: 'getContestants',
-    args: pollId !== undefined ? [pollId] : undefined,
+    args: [BigInt(pollId)],
     chainId: TARGET_CHAIN_ID,
-    query: { enabled: pollId !== undefined },
-  });
-  return res as typeof res & { data: Contestant[] | undefined };
+    query: {
+      enabled: pollId > 0,
+    },
+  })
 }
 
-export function useHasVoted(pollId?: bigint, user?: `0x${string}`) {
-  const res = useReadContract({
-    abi: VOTING_CONTRACT_ABI,
+export function useHasVoted(pollId: number, address?: string) {
+  return useReadContract({
     address: VOTING_CONTRACT_ADDRESS,
+    abi: VOTING_CONTRACT_ABI,
     functionName: 'hasUserVoted',
-    args: pollId !== undefined && user ? [pollId, user] : undefined,
+    args: [BigInt(pollId), address as `0x${string}`],
     chainId: TARGET_CHAIN_ID,
-    query: { enabled: pollId !== undefined && !!user },
-  });
-  return res as typeof res & { data: boolean | undefined };
+    query: {
+      enabled: pollId > 0 && !!address,
+    },
+  })
 }
 
-export function useHasContested(pollId?: bigint, user?: `0x${string}`) {
-  const res = useReadContract({
-    abi: VOTING_CONTRACT_ABI,
+export function useHasContested(pollId: number, address?: string) {
+  return useReadContract({
     address: VOTING_CONTRACT_ADDRESS,
+    abi: VOTING_CONTRACT_ABI,
     functionName: 'hasUserContested',
-    args: pollId !== undefined && user ? [pollId, user] : undefined,
+    args: [BigInt(pollId), address as `0x${string}`],
     chainId: TARGET_CHAIN_ID,
-    query: { enabled: pollId !== undefined && !!user },
-  });
-  return res as typeof res & { data: boolean | undefined };
+    query: {
+      enabled: pollId > 0 && !!address,
+    },
+  })
 }
 
-// Writes
-function useWriteHelper() {
-  const { address } = useAccount();
-  const write = useWriteContract();
-  const wait = useWaitForTransactionReceipt({ hash: write.data, chainId: TARGET_CHAIN_ID });
-  return { write, wait, address };
-}
-
+// Simplified write hooks
 export function useCreatePoll() {
-  const { write, wait, address } = useWriteHelper();
-  const createPoll = async (image: string, title: string, description: string, startsAt: bigint, endsAt: bigint) => {
-    const hash = await write.writeContractAsync({
-      abi: VOTING_CONTRACT_ABI,
+  const { writeContract, data: hash, error, isSuccess, isPending } = useWriteContract()
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash })
+
+  const createPoll = (image: string, title: string, description: string, startsAt: number, endsAt: number) => {
+    (writeContract as any)({
       address: VOTING_CONTRACT_ADDRESS,
-      account: address as `0x${string}`,
-      chain: hardhat,
+      abi: VOTING_CONTRACT_ABI,
       functionName: 'createPoll',
-      args: [image, title, description, startsAt, endsAt],
-    });
-    return hash;
-  };
-  return { createPoll, hash: write.data, isPending: write.isPending, ...wait };
+      args: [image, title, description, BigInt(startsAt), BigInt(endsAt)],
+    })
+  }
+
+  return { createPoll, isLoading: isPending || isConfirming, isSuccess: isConfirmed, txHash: hash }
 }
 
 export function useContest() {
-  const { write, wait, address } = useWriteHelper();
-  const contest = async (pollId: bigint, name: string, image: string) => {
-    const hash = await write.writeContractAsync({
-      abi: VOTING_CONTRACT_ABI,
+  const { writeContract, data: hash, isPending } = useWriteContract()
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+
+  const contest = (pollId: number, name: string, image: string) => {
+    (writeContract as any)({
       address: VOTING_CONTRACT_ADDRESS,
-      account: address as `0x${string}`,
-      chain: hardhat,
+      abi: VOTING_CONTRACT_ABI,
       functionName: 'contest',
-      args: [pollId, name, image],
-    });
-    return hash;
-  };
-  return { contest, hash: write.data, isPending: write.isPending, ...wait };
+      args: [BigInt(pollId), name, image],
+    })
+  }
+
+  return { contest, isLoading: isPending || isConfirming, isSuccess, txHash: hash }
 }
 
 export function useVote() {
-  const { write, wait, address } = useWriteHelper();
-  const vote = async (pollId: bigint, contestantId: bigint) => {
-    const hash = await write.writeContractAsync({
-      abi: VOTING_CONTRACT_ABI,
+  const { writeContract, data: hash, isPending } = useWriteContract()
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+
+  const vote = (pollId: number, contestantId: number) => {
+    (writeContract as any)({
       address: VOTING_CONTRACT_ADDRESS,
-      account: address as `0x${string}`,
-      chain: hardhat,
+      abi: VOTING_CONTRACT_ABI,
       functionName: 'vote',
-      args: [pollId, contestantId],
-    });
-    return hash;
-  };
-  return { vote, hash: write.data, isPending: write.isPending, ...wait };
+      args: [BigInt(pollId), BigInt(contestantId)],
+    })
+  }
+
+  return { vote, isLoading: isPending || isConfirming, isSuccess, txHash: hash }
 }
 
 export function useUpdatePoll() {
-  const { write, wait, address } = useWriteHelper();
-  const updatePoll = async (
-    pollId: bigint,
-    image: string,
-    title: string,
-    description: string,
-    startsAt: bigint,
-    endsAt: bigint,
-  ) => {
-    const hash = await write.writeContractAsync({
-      abi: VOTING_CONTRACT_ABI,
+  const { writeContract, data: hash, isPending } = useWriteContract()
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+
+  const updatePoll = (pollId: number, image: string, title: string, description: string, startsAt: number, endsAt: number) => {
+    (writeContract as any)({
       address: VOTING_CONTRACT_ADDRESS,
-      account: address as `0x${string}`,
-      chain: hardhat,
+      abi: VOTING_CONTRACT_ABI,
       functionName: 'updatePoll',
-      args: [pollId, image, title, description, startsAt, endsAt],
-    });
-    return hash;
-  };
-  return { updatePoll, hash: write.data, isPending: write.isPending, ...wait };
+      args: [BigInt(pollId), image, title, description, BigInt(startsAt), BigInt(endsAt)],
+    })
+  }
+
+  return { updatePoll, isLoading: isPending || isConfirming, isSuccess, txHash: hash }
 }
 
 export function useDeletePoll() {
-  const { write, wait, address } = useWriteHelper();
-  const deletePoll = async (pollId: bigint) => {
-    const hash = await write.writeContractAsync({
-      abi: VOTING_CONTRACT_ABI,
+  const { writeContract, data: hash, isPending } = useWriteContract()
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+
+  const deletePoll = (pollId: number) => {
+    (writeContract as any)({
       address: VOTING_CONTRACT_ADDRESS,
-      account: address as `0x${string}`,
-      chain: hardhat,
+      abi: VOTING_CONTRACT_ABI,
       functionName: 'deletePoll',
-      args: [pollId],
-    });
-    return hash;
-  };
-  return { deletePoll, hash: write.data, isPending: write.isPending, ...wait };
+      args: [BigInt(pollId)],
+    })
+  }
+
+  return { deletePoll, isLoading: isPending || isConfirming, isSuccess, txHash: hash }
 }

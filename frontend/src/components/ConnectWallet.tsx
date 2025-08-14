@@ -1,57 +1,96 @@
-import React from 'react';
-import { useAccount, useConnect, useDisconnect, useSwitchChain } from 'wagmi';
-import { TARGET_CHAIN_ID } from '@/constants/votingContract';
-import { Button } from '@/components/ui/button';
+import { useAccount, useConnect, useDisconnect, useSwitchChain } from 'wagmi'
+import { Button } from '@/components/ui/button'
+import { Wallet, ChevronDown } from 'lucide-react'
+import { TARGET_CHAIN_ID } from '@/constants/votingContract'
+import { useEffect } from 'react'
+import { motion } from 'framer-motion'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
-function truncate(addr: `0x${string}`) {
-  return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-}
+export function ConnectWallet() {
+  const { address, isConnected, chain } = useAccount()
+  const { connect, connectors } = useConnect()
+  const { disconnect } = useDisconnect()
+  const { switchChain } = useSwitchChain()
 
-const ConnectWallet: React.FC = () => {
-  const { address, chain, isConnecting, isReconnecting } = useAccount();
-  const { connectors, connect, status: connectStatus, error: connectError } = useConnect();
-  const { disconnect } = useDisconnect();
-  const { chains, switchChain, isPending: switching } = useSwitchChain();
+  // Auto-switch to Hardhat chain if connected to wrong network
+  useEffect(() => {
+    if (isConnected && chain?.id !== TARGET_CHAIN_ID) {
+      switchChain({ chainId: TARGET_CHAIN_ID })
+    }
+  }, [isConnected, chain?.id, switchChain])
 
-  const wrongChain = !!chain && chain.id !== TARGET_CHAIN_ID;
+  const truncateAddress = (addr: string) => {
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`
+  }
 
-  if (!address) {
-    const metaMask = connectors.find(c => c.name.toLowerCase().includes('metamask')) ?? connectors[0];
+  if (!isConnected) {
     return (
-      <div className="flex items-center gap-2">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.2 }}
+      >
         <Button
-          aria-label="Connect Wallet"
-          variant="outline"
-          disabled={!metaMask || connectStatus === 'pending' || isConnecting || isReconnecting}
-          onClick={() => metaMask && connect({ connector: metaMask })}
+          onClick={() => {
+            const connector = connectors[0]
+            if (connector) {
+              connect({ connector })
+            }
+          }}
+          className="gradient-primary hover-glow transition-smooth"
+          size="lg"
         >
-          {connectStatus === 'pending' || isConnecting || isReconnecting ? 'Connecting…' : 'Connect Wallet'}
+          <Wallet className="w-4 h-4 mr-2" />
+          Connect Wallet
         </Button>
-        {connectError && (
-          <span role="alert" className="text-[hsl(var(--destructive))] text-sm">{(connectError as any)?.shortMessage ?? connectError?.message}</span>
-        )}
-      </div>
-    );
+      </motion.div>
+    )
   }
 
-  if (wrongChain) {
-    const target = chains.find(c => c.id === TARGET_CHAIN_ID);
-    return (
-      <div className="flex items-center gap-2">
-        <Button aria-label="Switch Network" variant="secondary" disabled={switching} onClick={() => target && switchChain({ chainId: target.id })}>
-          {switching ? 'Switching…' : `Switch to ${target?.name ?? TARGET_CHAIN_ID}`}
-        </Button>
-        <Button aria-label="Disconnect" variant="ghost" onClick={() => disconnect()}>Disconnect</Button>
-      </div>
-    );
-  }
+  const isWrongNetwork = chain?.id !== TARGET_CHAIN_ID
 
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-sm">Connected: {truncate(address)}</span>
-      <Button aria-label="Disconnect" variant="ghost" onClick={() => disconnect()}>Disconnect</Button>
-    </div>
-  );
-};
-
-export default ConnectWallet;
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.2 }}
+      className="flex items-center gap-2"
+    >
+      {isWrongNetwork && (
+        <Button
+          onClick={() => switchChain({ chainId: TARGET_CHAIN_ID })}
+          variant="destructive"
+          size="sm"
+        >
+          Switch to Hardhat
+        </Button>
+      )}
+      
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button 
+            variant="outline" 
+            className="hover-lift transition-smooth"
+          >
+            <Wallet className="w-4 h-4 mr-2" />
+            {truncateAddress(address!)}
+            <ChevronDown className="w-4 h-4 ml-2" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="gradient-card border-border/50">
+          <DropdownMenuItem 
+            onClick={() => disconnect()}
+            className="text-destructive hover:text-destructive-foreground hover:bg-destructive"
+          >
+            Disconnect Wallet
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </motion.div>
+  )
+}
