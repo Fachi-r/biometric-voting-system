@@ -1,0 +1,11 @@
+onlyBuiltDependencies:
+  - '@swc/core'
+  - bufferutil
+  - esbuild
+  - keccak
+  - utf-8-validate
+
+packages:
+  - 'frontend'
+  - 'blockchain'
+  - 'server'
