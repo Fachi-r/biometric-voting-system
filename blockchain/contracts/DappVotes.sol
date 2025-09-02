@@ -1,17 +1,7 @@
 // SPDX-License-Identifier: MIT
-// Compatible with OpenZeppelin Contracts ^5.0.0
-
-pragma solidity >=0.7.0 <0.9.0;
-
-import "../utils/counter.sol";
-
-// TODO: Add fingerprint logic to the smart contract (based on hashed fingerprint ID).
-// TODO: Implement custom Counter function
+pragma solidity ^0.8.19;
 
 contract DappVotes {
-    using Counters for Counters.Counter;
-    Counters.Counter private totalPolls;
-
     struct Poll {
         uint id;
         string image;
@@ -34,213 +24,193 @@ contract DappVotes {
         uint votes;
     }
 
-    mapping(uint => Poll) private polls;
-    mapping(uint => bool) private pollExists;
-    mapping(uint => mapping(address => bool)) private hasVoted;
-    mapping(uint => mapping(address => bool)) private hasContested;
-    mapping(uint => mapping(uint => Contestant)) private pollContestants;
-    mapping(uint => Counters.Counter) private pollContestantCounters;
+    uint public totalPolls;
+    mapping(uint => Poll) public polls;
+    mapping(uint => mapping(uint => Contestant)) public contestants;
+    mapping(uint => mapping(address => bool)) public hasVoted;
+    mapping(address => uint[]) public userPolls;
 
-    event PollCreated(uint indexed pollId, address indexed creator);
-    event PollUpdated(uint indexed pollId);
+    event PollCreated(uint indexed pollId, address indexed director, string title);
+    event PollUpdated(uint indexed pollId, string title);
     event PollDeleted(uint indexed pollId);
-    event Contested(
-        uint indexed pollId,
-        uint indexed contestantId,
-        address indexed contestant
-    );
-    event Voted(
-        uint indexed pollId,
-        uint indexed contestantId,
-        address indexed voter
-    );
+    event ContestantAdded(uint indexed pollId, uint indexed contestantId, address indexed account, string name);
+    event VoteCast(uint indexed pollId, uint indexed contestantId, address indexed voter);
 
-    modifier onlyDirector(uint pollId) {
-        require(pollExists[pollId], "Poll does not exist");
-        require(polls[pollId].director == msg.sender, "Not poll director");
+    modifier onlyDirector(uint _pollId) {
+        require(polls[_pollId].director == msg.sender, "Only poll director can perform this action");
         _;
     }
 
-    modifier pollActive(uint pollId) {
-        require(pollExists[pollId], "Poll does not exist");
-        require(
-            block.timestamp >= polls[pollId].startsAt &&
-                block.timestamp < polls[pollId].endsAt,
-            "Poll not active"
-        );
+    modifier pollExists(uint _pollId) {
+        require(_pollId > 0 && _pollId <= totalPolls, "Poll does not exist");
+        require(!polls[_pollId].deleted, "Poll has been deleted");
+        _;
+    }
+
+    modifier validTimeframe(uint _startsAt, uint _endsAt) {
+        require(_startsAt > block.timestamp, "Start time must be in the future");
+        require(_endsAt > _startsAt, "End time must be after start time");
         _;
     }
 
     function createPoll(
-        string memory image,
-        string memory title,
-        string memory description,
-        uint startsAt,
-        uint endsAt
-    ) external {
-        require(bytes(image).length > 0, "Image required");
-        require(bytes(title).length > 0, "Title required");
-        require(bytes(description).length > 0, "Description required");
-        require(startsAt > 0 && endsAt > startsAt, "Invalid time range");
+        string memory _image,
+        string memory _title,
+        string memory _description,
+        uint _startsAt,
+        uint _endsAt
+    ) public validTimeframe(_startsAt, _endsAt) returns (uint) {
+        require(bytes(_title).length > 0, "Title cannot be empty");
+        require(bytes(_description).length > 0, "Description cannot be empty");
 
-        totalPolls.increment();
-        uint pollId = totalPolls.current();
-
-        polls[pollId] = Poll({
-            id: pollId,
-            image: image,
-            title: title,
-            description: description,
+        totalPolls++;
+        
+        polls[totalPolls] = Poll({
+            id: totalPolls,
+            image: _image,
+            title: _title,
+            description: _description,
             voteCount: 0,
             contestantCount: 0,
             deleted: false,
             director: msg.sender,
-            startsAt: startsAt,
-            endsAt: endsAt,
+            startsAt: _startsAt,
+            endsAt: _endsAt,
             createdAt: block.timestamp
         });
 
-        pollExists[pollId] = true;
-        emit PollCreated(pollId, msg.sender);
+        userPolls[msg.sender].push(totalPolls);
+        
+        emit PollCreated(totalPolls, msg.sender, _title);
+        return totalPolls;
     }
 
     function updatePoll(
-        uint pollId,
-        string memory image,
-        string memory title,
-        string memory description,
-        uint startsAt,
-        uint endsAt
-    ) external onlyDirector(pollId) {
-        Poll storage poll = polls[pollId];
-        require(!poll.deleted, "Poll is deleted");
-        require(poll.voteCount == 0, "Poll already has votes");
-        require(endsAt > startsAt, "Invalid time range");
+        uint _pollId,
+        string memory _image,
+        string memory _title,
+        string memory _description,
+        uint _startsAt,
+        uint _endsAt
+    ) public pollExists(_pollId) onlyDirector(_pollId) validTimeframe(_startsAt, _endsAt) {
+        require(polls[_pollId].voteCount == 0, "Cannot update poll after votes have been cast");
+        require(bytes(_title).length > 0, "Title cannot be empty");
+        require(bytes(_description).length > 0, "Description cannot be empty");
 
-        poll.image = image;
-        poll.title = title;
-        poll.description = description;
-        poll.startsAt = startsAt;
-        poll.endsAt = endsAt;
+        Poll storage poll = polls[_pollId];
+        poll.image = _image;
+        poll.title = _title;
+        poll.description = _description;
+        poll.startsAt = _startsAt;
+        poll.endsAt = _endsAt;
 
-        emit PollUpdated(pollId);
+        emit PollUpdated(_pollId, _title);
     }
 
-    function deletePoll(uint pollId) external onlyDirector(pollId) {
-        require(pollExists[pollId], "Poll does not exist");
-        Poll storage poll = polls[pollId];
-        require(!poll.deleted, "Poll already deleted");
-        require(poll.voteCount == 0, "Cannot delete with votes");
-
-        poll.deleted = true;
-        emit PollDeleted(pollId);
+    function deletePoll(uint _pollId) public pollExists(_pollId) onlyDirector(_pollId) {
+        require(polls[_pollId].voteCount == 0, "Cannot delete poll with existing votes");
+        
+        polls[_pollId].deleted = true;
+        emit PollDeleted(_pollId);
     }
 
     function contest(
-        uint pollId,
-        string memory name,
-        string memory image
-    ) external {
-        require(pollExists[pollId], "Poll does not exist");
-        require(!hasContested[pollId][msg.sender], "Already contested");
-        require(polls[pollId].voteCount == 0, "Poll already started");
+        uint _pollId,
+        string memory _name,
+        string memory _image
+    ) public pollExists(_pollId) {
+        require(bytes(_name).length > 0, "Name cannot be empty");
+        require(block.timestamp < polls[_pollId].startsAt, "Cannot join after poll has started");
 
-        require(bytes(name).length > 0, "Name required");
-        require(bytes(image).length > 0, "Image required");
+        Poll storage poll = polls[_pollId];
+        poll.contestantCount++;
 
-        pollContestantCounters[pollId].increment();
-        uint contestantId = pollContestantCounters[pollId].current();
-
-        pollContestants[pollId][contestantId] = Contestant({
-            id: contestantId,
-            image: image,
-            name: name,
+        contestants[_pollId][poll.contestantCount] = Contestant({
+            id: poll.contestantCount,
+            image: _image,
+            name: _name,
             account: msg.sender,
             votes: 0
         });
 
-        hasContested[pollId][msg.sender] = true;
-        polls[pollId].contestantCount++;
-
-        emit Contested(pollId, contestantId, msg.sender);
+        emit ContestantAdded(_pollId, poll.contestantCount, msg.sender, _name);
     }
 
-    function vote(uint pollId, uint contestantId) external pollActive(pollId) {
-        require(pollExists[pollId], "Poll does not exist");
-        require(!hasVoted[pollId][msg.sender], "Already voted");
-        require(!polls[pollId].deleted, "Poll deleted");
-        require(polls[pollId].contestantCount >= 2, "Not enough contestants");
+    function vote(uint _pollId, uint _contestantId) public pollExists(_pollId) {
+        require(!hasVoted[_pollId][msg.sender], "You have already voted in this poll");
+        require(block.timestamp >= polls[_pollId].startsAt, "Voting has not started yet");
+        require(block.timestamp <= polls[_pollId].endsAt, "Voting has ended");
+        require(_contestantId > 0 && _contestantId <= polls[_pollId].contestantCount, "Invalid contestant");
+        require(polls[_pollId].contestantCount >= 2, "Poll must have at least 2 contestants");
 
-        Contestant storage contestant = pollContestants[pollId][contestantId];
-        require(contestant.account != address(0), "Invalid contestant");
+        hasVoted[_pollId][msg.sender] = true;
+        contestants[_pollId][_contestantId].votes++;
+        polls[_pollId].voteCount++;
 
-        contestant.votes++;
-        polls[pollId].voteCount++;
-        hasVoted[pollId][msg.sender] = true;
-
-        emit Voted(pollId, contestantId, msg.sender);
+        emit VoteCast(_pollId, _contestantId, msg.sender);
     }
 
-    function getPoll(uint pollId) external view returns (Poll memory) {
-        require(pollExists[pollId], "Poll does not exist");
-        return polls[pollId];
-    }
-
-    function getPolls() external view returns (Poll[] memory activePolls) {
-        uint count;
-        for (uint i = 1; i <= totalPolls.current(); i++) {
-            if (!polls[i].deleted) count++;
-        }
-
-        activePolls = new Poll[](count);
-        uint index;
-        for (uint i = 1; i <= totalPolls.current(); i++) {
+    function getPolls() public view returns (Poll[] memory) {
+        uint validPollCount = 0;
+        
+        // Count valid polls
+        for (uint i = 1; i <= totalPolls; i++) {
             if (!polls[i].deleted) {
-                activePolls[index++] = polls[i];
+                validPollCount++;
             }
         }
-    }
 
-    function getContestants(
-        uint pollId
-    ) external view returns (Contestant[] memory) {
-        require(pollExists[pollId], "Poll does not exist");
+        Poll[] memory validPolls = new Poll[](validPollCount);
+        uint currentIndex = 0;
 
-        uint total = pollContestantCounters[pollId].current();
-        Contestant[] memory results = new Contestant[](total);
-
-        for (uint i = 1; i <= total; i++) {
-            results[i - 1] = pollContestants[pollId][i];
+        // Fill array with valid polls
+        for (uint i = 1; i <= totalPolls; i++) {
+            if (!polls[i].deleted) {
+                validPolls[currentIndex] = polls[i];
+                currentIndex++;
+            }
         }
 
-        return results;
+        return validPolls;
     }
 
-    function getContestant(
-        uint pollId,
-        uint contestantId
-    ) external view returns (Contestant memory) {
-        require(pollExists[pollId], "Poll does not exist");
-        return pollContestants[pollId][contestantId];
+    function getContestants(uint _pollId) public view pollExists(_pollId) returns (Contestant[] memory) {
+        uint contestantCount = polls[_pollId].contestantCount;
+        Contestant[] memory pollContestants = new Contestant[](contestantCount);
+
+        for (uint i = 1; i <= contestantCount; i++) {
+            pollContestants[i - 1] = contestants[_pollId][i];
+        }
+
+        return pollContestants;
     }
 
-    function getPollCount() external view returns (uint) {
-        return totalPolls.current();
+    function hasAddressVoted(uint _pollId, address _voter) public view pollExists(_pollId) returns (bool) {
+        return hasVoted[_pollId][_voter];
     }
 
-    function hasUserVoted(
-        uint pollId,
-        address user
-    ) external view returns (bool) {
-        require(pollExists[pollId], "Poll does not exist");
-        return hasVoted[pollId][user];
+    function getPoll(uint _pollId) public view pollExists(_pollId) returns (Poll memory) {
+        return polls[_pollId];
     }
 
-    function hasUserContested(
-        uint pollId,
-        address user
-    ) external view returns (bool) {
-        require(pollExists[pollId], "Poll does not exist");
-        return hasContested[pollId][user];
+    function getUserPolls(address _user) public view returns (uint[] memory) {
+        return userPolls[_user];
+    }
+
+    function isPollActive(uint _pollId) public view pollExists(_pollId) returns (bool) {
+        Poll memory poll = polls[_pollId];
+        return (block.timestamp >= poll.startsAt && block.timestamp <= poll.endsAt);
+    }
+
+    function getPollStatus(uint _pollId) public view pollExists(_pollId) returns (string memory) {
+        Poll memory poll = polls[_pollId];
+        
+        if (block.timestamp < poll.startsAt) {
+            return "upcoming";
+        } else if (block.timestamp >= poll.startsAt && block.timestamp <= poll.endsAt) {
+            return "active";
+        } else {
+            return "ended";
+        }
     }
 }

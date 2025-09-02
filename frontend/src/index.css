@@ -2,47 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* VoteForge Design System - All colors, gradients, fonts, etc defined here. */
 
 @layer base {
   :root {
-    /* Blockchain-inspired color palette */
+    /* VoteForge Brand Colors - HSL only */
     --background: 225 15% 9%;
     --foreground: 210 40% 98%;
 
-    --card: 224 17% 11%;
+    --card: 225 15% 12%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 224 17% 11%;
+    --popover: 225 15% 12%;
     --popover-foreground: 210 40% 98%;
 
-    /* Primary: Electric blockchain blue */
+    /* VoteForge Primary - Electric blockchain blue */
     --primary: 234 89% 74%;
     --primary-foreground: 225 15% 9%;
-    --primary-glow: 234 89% 84%;
 
-    /* Secondary: Deep purple */
+    /* VoteForge Secondary - Deep purple */
     --secondary: 262 83% 58%;
     --secondary-foreground: 210 40% 98%;
 
     --muted: 225 15% 15%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 262 83% 58%;
+    --accent: 225 15% 18%;
     --accent-foreground: 210 40% 98%;
 
-    /* Success: Crypto green */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* VoteForge Success - Crypto green */
     --success: 160 84% 39%;
     --success-foreground: 210 40% 98%;
-
-    /* Warning: Attention orange */
-    --warning: 45 93% 58%;
-    --warning-foreground: 225 15% 9%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
 
     --border: 225 15% 20%;
     --input: 225 15% 15%;
@@ -50,87 +43,23 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--accent)));
-    --gradient-hero: linear-gradient(135deg, hsl(var(--background)), hsl(225 15% 12%));
-    --gradient-card: linear-gradient(135deg, hsl(var(--card)), hsl(225 15% 13%));
+    /* VoteForge Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(234 89% 74%), hsl(262 83% 58%));
+    --gradient-secondary: linear-gradient(135deg, hsl(262 83% 58%), hsl(234 89% 74%));
+    --gradient-hero: linear-gradient(135deg, hsl(225 15% 9%), hsl(225 15% 12%));
+    --gradient-card: linear-gradient(135deg, hsl(225 15% 12% / 0.8), hsl(225 15% 15% / 0.6));
+    --gradient-voter: linear-gradient(135deg, hsl(234 89% 74% / 0.2), hsl(234 89% 74% / 0.05));
+    --gradient-admin: linear-gradient(135deg, hsl(262 83% 58% / 0.2), hsl(262 83% 58% / 0.05));
 
-    /* Shadows */
-    --shadow-primary: 0 10px 30px -10px hsl(var(--primary) / 0.3);
-    --shadow-secondary: 0 10px 30px -10px hsl(var(--secondary) / 0.3);
-    --shadow-card: 0 4px 20px -4px hsl(0 0% 0% / 0.25);
-    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.4);
+    /* VoteForge Shadows & Effects */
+    --shadow-elegant: 0 25px 50px -12px hsl(234 89% 74% / 0.25);
+    --shadow-glow: 0 0 40px hsl(234 89% 74% / 0.3);
+    --shadow-card: 0 8px 32px -4px hsl(225 15% 5% / 0.5);
+    --shadow-floating: 0 20px 25px -5px hsl(225 15% 5% / 0.4);
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .light {
-    /* Light mode for blockchain voting */
-    --background: 210 40% 98%;
-    --foreground: 225 15% 9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 225 15% 9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 225 15% 9%;
-
-    --primary: 234 89% 64%;
-    --primary-foreground: 210 40% 98%;
-    --primary-glow: 234 89% 74%;
-
-    --secondary: 262 83% 48%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-
-    --accent: 262 83% 48%;
-    --accent-foreground: 210 40% 98%;
-
-    --success: 160 84% 39%;
-    --success-foreground: 210 40% 98%;
-
-    --warning: 45 93% 58%;
-    --warning-foreground: 225 15% 9%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 215 14% 89%;
-    --input: 215 14% 89%;
-    --ring: 234 89% 64%;
-
-    /* Light mode gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--accent)));
-    --gradient-hero: linear-gradient(135deg, hsl(var(--background)), hsl(210 40% 96%));
-    --gradient-card: linear-gradient(135deg, hsl(var(--card)), hsl(210 40% 99%));
-
-    /* Light mode shadows */
-    --shadow-primary: 0 10px 30px -10px hsl(var(--primary) / 0.25);
-    --shadow-secondary: 0 10px 30px -10px hsl(var(--secondary) / 0.25);
-    --shadow-card: 0 4px 20px -4px hsl(0 0% 0% / 0.1);
-    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.3);
+    --transition-spring: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 }
 
@@ -141,85 +70,163 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
-    background: var(--gradient-hero);
+    background: linear-gradient(135deg, hsl(225 15% 9%), hsl(225 15% 12%));
     min-height: 100vh;
   }
 
-  /* Blockchain-specific utilities */
-  .gradient-primary {
-    background: var(--gradient-primary);
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
   }
 
-  .gradient-secondary {
-    background: var(--gradient-secondary);
+  ::-webkit-scrollbar-track {
+    @apply bg-muted;
   }
 
-  .gradient-card {
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary/50 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/70;
+  }
+}
+
+@layer components {
+  /* VoteForge Glass Effect */
+  .glass-card {
     background: var(--gradient-card);
-  }
-
-  .shadow-primary {
-    box-shadow: var(--shadow-primary);
-  }
-
-  .shadow-secondary {
-    box-shadow: var(--shadow-secondary);
-  }
-
-  .shadow-card {
+    backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--border));
     box-shadow: var(--shadow-card);
   }
 
-  .shadow-glow {
-    box-shadow: var(--shadow-glow);
+  /* Floating Orb Animations */
+  .floating-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+    animation: float 6s ease-in-out infinite;
+    opacity: 0.6;
   }
 
-  .transition-smooth {
-    transition: var(--transition-smooth);
+  .orb-1 {
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, hsl(234 89% 74% / 0.3), transparent);
+    top: -200px;
+    left: -200px;
+    animation-delay: 0s;
   }
 
-  .transition-bounce {
-    transition: var(--transition-bounce);
+  .orb-2 {
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, hsl(262 83% 58% / 0.3), transparent);
+    bottom: -150px;
+    right: -150px;
+    animation-delay: 2s;
   }
 
-  /* Hover animations */
-  .hover-lift {
-    @apply transition-smooth hover:-translate-y-1 hover:shadow-card;
+  .orb-3 {
+    width: 250px;
+    height: 250px;
+    background: radial-gradient(circle, hsl(160 84% 39% / 0.2), transparent);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation-delay: 4s;
   }
 
-  .hover-glow {
-    @apply transition-smooth hover:shadow-glow;
+  /* Fingerprint Scanner Animation */
+  .fingerprint-scanner {
+    animation: pulse-fingerprint 2s ease-in-out;
   }
 
-  /* Blockchain pulse animation */
-  .pulse-blockchain {
-    animation: pulse-blockchain 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  .blockchain-pulse {
+    animation: blockchain-pulse 2s ease-in-out infinite;
   }
 
-  @keyframes pulse-blockchain {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.7;
-      transform: scale(1.02);
-    }
+  /* Interactive Elements */
+  .vote-card {
+    transition: var(--transition-spring);
   }
 
-  /* Vote confirmation animation */
-  .vote-success {
-    animation: vote-success 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  .vote-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: var(--shadow-floating);
   }
 
-  @keyframes vote-success {
-    0% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.1);
-    }
-    100% {
-      transform: scale(1);
-    }
+  .role-card {
+    transition: var(--transition-spring);
+    cursor: pointer;
+  }
+
+  .role-card:hover {
+    transform: translateY(-12px) rotateX(5deg);
+    box-shadow: var(--shadow-elegant);
+  }
+
+  /* Gradient Text */
+  .gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Staggered Animations */
+  .stagger-item {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: stagger-in 0.6s ease-out forwards;
+  }
+
+  .stagger-item:nth-child(1) { animation-delay: 0.1s; }
+  .stagger-item:nth-child(2) { animation-delay: 0.2s; }
+  .stagger-item:nth-child(3) { animation-delay: 0.3s; }
+  .stagger-item:nth-child(4) { animation-delay: 0.4s; }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-20px) rotate(120deg);
+  }
+  66% {
+    transform: translateY(-10px) rotate(240deg);
+  }
+}
+
+@keyframes pulse-fingerprint {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes blockchain-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsl(234 89% 74% / 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 20px hsl(234 89% 74% / 0);
+  }
+}
+
+@keyframes stagger-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

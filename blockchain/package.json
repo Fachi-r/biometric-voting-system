@@ -1,25 +1,22 @@
 {
-  "name": "blockchain",
+  "name": "dappvotes-blockchain",
   "version": "1.0.0",
-  "description": "Smart contracts and deployment scripts for DappVotes project.",
+  "description": "VoteForge blockchain smart contracts",
   "main": "index.js",
   "scripts": {
-    "compile": "npx hardhat compile",
-    "test": "npx hardhat test",
-    "node": "npx hardhat node",
-    "deploy": "npx hardhat run scripts/DappVotes.js --network localhost",
-    "coverage": "npx hardhat coverage"
+    "test": "hardhat test",
+    "compile": "hardhat compile",
+    "deploy": "hardhat run scripts/deploy.js --network localhost",
+    "node": "hardhat node"
   },
-  "keywords": [],
-  "author": "Ziba Nyangulu",
+  "keywords": ["blockchain", "voting", "ethereum", "hardhat"],
+  "author": "VoteForge",
   "license": "MIT",
   "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^6.0.0",
-    "@openzeppelin/contracts": "^5.0.1",
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "hardhat": "^2.19.0",
     "chai": "^4.3.7",
-    "ethers": "^6.6.2",
-    "hardhat": "^2.25.0",
-    "hardhat-abi-exporter": "^2.11.0",
-    "solidity-coverage": "^0.8.2"
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "ethers": "^6.8.0"
   }
 }

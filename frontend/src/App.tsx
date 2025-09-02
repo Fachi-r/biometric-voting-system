@@ -3,17 +3,17 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { WagmiProvider } from 'wagmi'
-import { config } from './wagmiClient'
+import { Provider } from "react-redux";
+import { store } from "./store";
 import Index from "./pages/Index";
-import Voter from "./pages/Voter";
-import Admin from "./pages/Admin";
+import VoterDashboard from "./pages/VoterDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <WagmiProvider config={config}>
+  <Provider store={store}>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
@@ -21,15 +21,15 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/voter" element={<Voter />} />
-            <Route path="/admin" element={<Admin />} />
+            <Route path="/voter-dashboard" element={<VoterDashboard />} />
+            <Route path="/admin-dashboard" element={<AdminDashboard />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
-  </WagmiProvider>
+  </Provider>
 );
 
 export default App;
