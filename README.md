@@ -6,7 +6,7 @@ This repository contains all components for the project.
 - `/frontend` – Vite + React + Tailwind frontend
 - `/server` – Express server bridging ESP32 and frontend
 - `/blockchain` – Smart contracts and deployment scripts
-- `/esp32` – ESP32 firmware (Arduino)
+- `/esp32` – ESP32 firmware (Arduino IDE)
 
 ## Requirements
 - [pnpm](https://pnpm.io) installed globally
@@ -17,7 +17,7 @@ This repository contains all components for the project.
 ## Scripts
 Install dependencies in all subfolders:
 ```bash
-pnpm install
+pnpm install --recursive
 ```
 
 ### Development
