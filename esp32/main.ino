@@ -1,8 +1,9 @@
 #include <WiFi.h>
+#include <ArduinoJson.h>
 #include <PubSubClient.h>
-#include <Adafruit_Fingerprint.h>
 #include <HardwareSerial.h>
 #include <WiFiClientSecure.h>
+#include <Adafruit_Fingerprint.h>
 
 // TODO: Add verification logic
 // TODO: Refactor messaging functions into messaging.cpp
@@ -22,6 +23,8 @@ PubSubClient client(wifiClient);
 HardwareSerial mySerial(1);
 Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
 
+// Forward decl
+
 void setup()  
 {
   Serial.begin(115200);
@@ -40,6 +43,7 @@ void setup()
   // MQTT
   wifiClient.setInsecure(); // For demo
   client.setServer(MQTT_SERVER, MQTT_PORT);
+  client.setCallback(mqttCallback);
 
   // Fingerprint persistence
   preferences.begin("fingerprint", false);
@@ -69,5 +73,43 @@ void loop() {
     if (c == 'e') enrollFingerprint(enrolledCount);
     if (c == 'v') verifyFingerprint();
     if (c == 't') downloadAllTemplates(20, 3);
+  }
+}
+
+// --- MQTT Callback ---
+void mqttCallback(char* topic, byte* payload, unsigned int length) {
+  payload[length] = '\0'; // null-terminate
+  String msg = String((char*)payload);
+
+  Serial.printf("MQTT Message on [%s]: %s\n", topic, msg.c_str());
+
+  // Handle fingerprint commands
+  if (strcmp(topic, TOPIC_FP_COMMAND) == 0) {
+    // Expected JSON: {"action":"verify"}
+    DynamicJsonDocument doc(256);
+    DeserializationError err = deserializeJson(doc, msg);
+    if (err) {
+      Serial.println("Failed to parse fingerprint command JSON");
+      return;
+    }
+
+    String action = doc["action"] | "";
+    uint16_t userId = doc["userId"] | enrolledCount;
+
+    if (action == "verify") {
+      Serial.printf("Fingerprint: Verify request for user %d\n", userId);
+      verifyFingerprint(); // pass userId if needed
+    }
+    else if (action == "enroll") {
+      Serial.printf("Fingerprint: Enroll request for user %d\n", userId);
+      enrollFingerprint(userId);
+    }
+    else if (action == "download-templates") {
+      Serial.println("Fingerprint: Download templates request");
+      downloadAllTemplates(20, 3); // adjust args as needed
+    }
+    else {
+      Serial.printf("Unknown fingerprint action: %s\n", action.c_str());
+    }
   }
 }

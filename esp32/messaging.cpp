@@ -23,28 +23,38 @@ String statusToString(EnrolmentStatus status) {
 
 void publishEnrolmentStatus(EnrolmentStatus status, String message) {
   String payload = "{\"status\":\"" + statusToString(status) + "\",\"message\":\"" + message + "\"}";
-  client.publish("voting/enrolment/status", payload.c_str());
-  Serial.println("MQTT Published: " + payload);
+  client.publish(TOPIC_FP_STATUS, payload.c_str());
+  Serial.println("MQTT Published (status): " + payload);
+}
+
+void publishResult(uint16_t id, bool success, const String& message) {
+  String payload = "{\"id\":" + String(id) +
+                   ",\"success\":" + String(success ? "true" : "false") +
+                   ",\"message\":\"" + message + "\"}";
+  client.publish(TOPIC_FP_RESULT, payload.c_str());
+  Serial.println("MQTT Published (result): " + payload);
 }
 
 void publishTemplate(uint16_t id, const String& hexTemplate) {
   String payload = "{\"id\":" + String(id) + ",\"template\":\"" + hexTemplate + "\"}";
-  client.publish("voting/enrolment/template", payload.c_str());
-  Serial.println("Template published: " + payload);
+  client.publish(TOPIC_FP_TEMPLATES, payload.c_str());
+  Serial.println("MQTT Published (template): " + payload);
 }
 
 void sendHeartbeat() {
   String statusPayload = "{\"status\":\"alive\"}";
-  client.publish("esp32/health", statusPayload.c_str());
-  Serial.println("MQTT Data Published: " + statusPayload);
+  client.publish(TOPIC_HEALTH, statusPayload.c_str());
+  Serial.println("MQTT Data Published (heartbeat): " + statusPayload);
 }
 
+// --- Reconnect logic ---
 void reconnect() {
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
-    if (  client.connect("fingerprintClient", MQTT_USERNAME, MQTT_PASSWORD)) {
+    if (client.connect("fingerprintClient", MQTT_USERNAME, MQTT_PASSWORD)) {
       Serial.println("connected");
-      // client.subscribe(topic_sub);
+      // Subscribe to all topics we care about
+      client.subscribe(TOPIC_FP_COMMAND);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
