@@ -31,7 +31,8 @@ const BiometricAuth = () => {
   // React to fingerprint status updates
   useEffect(() => {
     if (!biometricAuth.isOpen) return;
-
+    console.log(fingerprintStatus);
+    
     switch (fingerprintStatus.status) {
       case 'place_finger':
       case 'place_finger_again':
@@ -84,7 +85,7 @@ const BiometricAuth = () => {
           <div className="text-center space-y-2">
             <h2 className="text-2xl font-bold gradient-text">Biometric Authentication</h2>
             <p className="text-muted-foreground">
-              {fingerprintStatus.message || "Please place your finger on the scanner"}
+              {fingerprintStatus.message}
             </p>
           </div>
 

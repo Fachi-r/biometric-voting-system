@@ -6,11 +6,22 @@ import { openBiometricAuth } from '@/store/slices/modalSlice';
 import BiometricAuth from '@/components/BiometricAuth';
 import Navbar from '@/components/Navbar';
 import { Shield, Vote, Users, BarChart3, Fingerprint, Github, Twitter, Globe } from 'lucide-react';
+import { WEBSOCKET_URL } from '@/hooks/use-websocket';
 
 const Index = () => {
   const dispatch = useDispatch();
 
   const handleRoleSelect = (role: 'voter' | 'admin') => {
+    fetch(`${WEBSOCKET_URL}/fingerprint/verify`, { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Fingerprint scan initiated:', data);
+      })
     dispatch(openBiometricAuth(role));
   };
 
@@ -34,11 +45,11 @@ const Index = () => {
                 <span className="text-foreground">Voting Platform</span>
               </h1>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                Revolutionary voting platform powered by blockchain technology, featuring biometric authentication 
+                Revolutionary voting platform powered by blockchain technology, featuring biometric authentication
                 and transparent, immutable election records.
               </p>
             </div>
-            
+
             <div className="flex flex-wrap justify-center gap-4">
               <Badge variant="secondary" className="px-4 py-2">
                 <Fingerprint className="w-4 h-4 mr-2" />
@@ -57,7 +68,7 @@ const Index = () => {
 
           {/* Role Selection Cards */}
           <div className="grid md:grid-cols-2 gap-8 mb-16">
-            <Card 
+            <Card
               className="role-card glass-card border-primary/20 cursor-pointer stagger-item"
               onClick={() => handleRoleSelect('voter')}
             >
@@ -76,7 +87,7 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card 
+            <Card
               className="role-card glass-card border-secondary/20 cursor-pointer stagger-item"
               onClick={() => handleRoleSelect('admin')}
             >
@@ -104,7 +115,7 @@ const Index = () => {
                   <Vote className="w-6 h-6 text-primary" />
                   <h2 className="text-2xl font-bold">How It Works</h2>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
                   {/* Voter Instructions */}
                   <div className="space-y-4">
@@ -161,7 +172,7 @@ const Index = () => {
 
                 <div className="mt-8 p-4 rounded-lg bg-muted/20 border border-border/30">
                   <p className="text-sm text-muted-foreground">
-                    <strong>Note:</strong> All transactions require MetaMask confirmation and will be recorded 
+                    <strong>Note:</strong> All transactions require MetaMask confirmation and will be recorded
                     permanently on the blockchain for maximum transparency and security.
                   </p>
                 </div>
@@ -180,7 +191,7 @@ const Index = () => {
               <span className="font-semibold">VoteForge</span>
               <span className="text-muted-foreground">© 2024</span>
             </div>
-            
+
             <div className="flex items-center space-x-6">
               <span className="text-sm text-muted-foreground">Powered by:</span>
               <div className="flex space-x-4 text-xs text-muted-foreground">
