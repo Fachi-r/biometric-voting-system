@@ -198,12 +198,30 @@ const CreatePollDialog = ({ open, onOpenChange, onSuccess }: CreatePollDialogPro
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">Image URL</label>
-              <Input 
-                placeholder="https://example.com/image.jpg" 
-                value={formData.image}
-                onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
-              />
+              <label className="text-sm font-medium mb-2 block">Image Upload</label>
+              <div className="space-y-2">
+                <Input 
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (e) => {
+                        setFormData(prev => ({ ...prev, image: e.target?.result as string }));
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-primary/10 file:text-primary"
+                />
+                <div className="text-xs text-muted-foreground">Or enter URL:</div>
+                <Input 
+                  placeholder="https://example.com/image.jpg" 
+                  value={formData.image.startsWith('data:') ? '' : formData.image}
+                  onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
+                />
+              </div>
             </div>
           </div>
           

@@ -19,6 +19,11 @@ const VoterDashboard = () => {
   const [loading, setLoading] = useState(false);
   const wallet = useSelector((state: RootState) => state.wallet);
 
+  const registeredVoters = JSON.parse(localStorage.getItem('registeredVoters') || '[]');
+  const voterInfo = registeredVoters.find(
+    (v: any) => v.walletAddress.toLowerCase() === wallet.address?.toLowerCase()
+  );
+
   useEffect(() => {
     if (wallet.isConnected) {
       loadPolls();
@@ -98,8 +103,13 @@ const VoterDashboard = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="text-xl font-semibold mb-2">
-                        Welcome back, {wallet.address?.slice(0, 6)}...{wallet.address?.slice(-4)}!
+                        Welcome, {wallet.address?.slice(0, 6)}...{wallet.address?.slice(-4)}
                       </h2>
+                      {voterInfo && (
+                        <div className="text-sm text-muted-foreground">
+                          Fingerprint ID: {voterInfo.fingerprintId}
+                        </div>
+                      )}
                       <p className="text-muted-foreground">Your participation helps shape our community's future.</p>
                     </div>
                     <div className="text-right">

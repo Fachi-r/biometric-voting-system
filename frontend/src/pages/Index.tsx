@@ -6,27 +6,29 @@ import { openBiometricAuth } from '@/store/slices/modalSlice';
 import BiometricAuth from '@/components/BiometricAuth';
 import Navbar from '@/components/Navbar';
 import { Shield, Vote, Users, BarChart3, Fingerprint, Github, Twitter, Globe } from 'lucide-react';
-import { WEBSOCKET_URL } from '@/hooks/use-websocket';
+import votingBg from '@/assets/voting-bg.jpg';
+import reactIcon from '@/assets/react-icon.png';
+import ethereumIcon from '@/assets/ethereum-icon.png';
+import hardhatIcon from '@/assets/hardhat-icon.png';
+import metamaskIcon from '@/assets/metamask-icon.png';
 
 const Index = () => {
   const dispatch = useDispatch();
 
   const handleRoleSelect = (role: 'voter' | 'admin') => {
-    fetch(`${WEBSOCKET_URL}/fingerprint/verify`, { method: 'POST', headers: { 'Content-Type': 'application/json' } })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
-        console.log('Fingerprint scan initiated:', data);
-      })
     dispatch(openBiometricAuth(role));
   };
 
   return (
     <div className="min-h-screen relative overflow-hidden">
+      {/* Background Illustration */}
+      <div 
+        className="absolute inset-0 opacity-30 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url(${votingBg})`,
+        }}
+      />
+      
       {/* Floating Orbs Background */}
       <div className="floating-orb orb-1" />
       <div className="floating-orb orb-2" />
@@ -45,11 +47,11 @@ const Index = () => {
                 <span className="text-foreground">Voting Platform</span>
               </h1>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                Revolutionary voting platform powered by blockchain technology, featuring biometric authentication
+                Revolutionary voting platform powered by blockchain technology, featuring biometric authentication 
                 and transparent, immutable election records.
               </p>
             </div>
-
+            
             <div className="flex flex-wrap justify-center gap-4">
               <Badge variant="secondary" className="px-4 py-2">
                 <Fingerprint className="w-4 h-4 mr-2" />
@@ -68,7 +70,7 @@ const Index = () => {
 
           {/* Role Selection Cards */}
           <div className="grid md:grid-cols-2 gap-8 mb-16">
-            <Card
+            <Card 
               className="role-card glass-card border-primary/20 cursor-pointer stagger-item"
               onClick={() => handleRoleSelect('voter')}
             >
@@ -87,7 +89,7 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card
+            <Card 
               className="role-card glass-card border-secondary/20 cursor-pointer stagger-item"
               onClick={() => handleRoleSelect('admin')}
             >
@@ -99,7 +101,7 @@ const Index = () => {
                 <p className="text-muted-foreground mb-6">
                   Create and oversee democratic processes. Ensure fair and transparent elections.
                 </p>
-                <Button className="w-full bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary/90 hover:to-secondary/70 border-0">
+                <Button className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 border-0">
                   Enter as Admin
                   <Fingerprint className="w-4 h-4 ml-2" />
                 </Button>
@@ -115,14 +117,14 @@ const Index = () => {
                   <Vote className="w-6 h-6 text-primary" />
                   <h2 className="text-2xl font-bold">How It Works</h2>
                 </div>
-
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
                   {/* Voter Instructions */}
                   <div className="space-y-4">
-                    <div className="w-12 h-12 mx-auto rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4">
+                    <div className="w-12 h-12 mx-auto rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mb-4">
                       <Vote className="w-6 h-6 text-primary" />
                     </div>
-                    <h3 className="text-xl font-semibold">For Voters</h3>
+                    <h3 className="text-xl font-semibold text-foreground">For Voters</h3>
                     <div className="text-left space-y-2 text-muted-foreground">
                       <p className="flex items-start space-x-2">
                         <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/20 text-primary text-xs flex items-center justify-center mt-0.5">1</span>
@@ -145,25 +147,25 @@ const Index = () => {
 
                   {/* Admin Instructions */}
                   <div className="space-y-4">
-                    <div className="w-12 h-12 mx-auto rounded-full bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center mb-4">
-                      <BarChart3 className="w-6 h-6 text-secondary" />
+                    <div className="w-12 h-12 mx-auto rounded-full bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center mb-4">
+                      <BarChart3 className="w-6 h-6 text-primary" />
                     </div>
-                    <h3 className="text-xl font-semibold">For Administrators</h3>
+                    <h3 className="text-xl font-semibold text-foreground">For Administrators</h3>
                     <div className="text-left space-y-2 text-muted-foreground">
                       <p className="flex items-start space-x-2">
                         <span className="flex-shrink-0 w-5 h-5 rounded-full bg-secondary/20 text-secondary text-xs flex items-center justify-center mt-0.5">1</span>
                         <span>Click "Enter as Admin" and complete biometric authentication</span>
                       </p>
                       <p className="flex items-start space-x-2">
-                        <span className="flex-shrink-0 w-5 h-5 rounded-full bg-secondary/20 text-secondary text-xs flex items-center justify-center mt-0.5">2</span>
+                        <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/20 text-primary text-xs flex items-center justify-center mt-0.5 font-medium">2</span>
                         <span>Connect your MetaMask wallet to access admin features</span>
                       </p>
                       <p className="flex items-start space-x-2">
-                        <span className="flex-shrink-0 w-5 h-5 rounded-full bg-secondary/20 text-secondary text-xs flex items-center justify-center mt-0.5">3</span>
+                        <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/20 text-primary text-xs flex items-center justify-center mt-0.5 font-medium">3</span>
                         <span>Create new elections with at least 2 candidates</span>
                       </p>
                       <p className="flex items-start space-x-2">
-                        <span className="flex-shrink-0 w-5 h-5 rounded-full bg-secondary/20 text-secondary text-xs flex items-center justify-center mt-0.5">4</span>
+                        <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/20 text-primary text-xs flex items-center justify-center mt-0.5 font-medium">4</span>
                         <span>Monitor real-time analytics and manage elections</span>
                       </p>
                     </div>
@@ -172,7 +174,7 @@ const Index = () => {
 
                 <div className="mt-8 p-4 rounded-lg bg-muted/20 border border-border/30">
                   <p className="text-sm text-muted-foreground">
-                    <strong>Note:</strong> All transactions require MetaMask confirmation and will be recorded
+                    <strong>Note:</strong> All transactions require MetaMask confirmation and will be recorded 
                     permanently on the blockchain for maximum transparency and security.
                   </p>
                 </div>
@@ -191,17 +193,26 @@ const Index = () => {
               <span className="font-semibold">VoteForge</span>
               <span className="text-muted-foreground">© 2024</span>
             </div>
-
+            
             <div className="flex items-center space-x-6">
               <span className="text-sm text-muted-foreground">Powered by:</span>
-              <div className="flex space-x-4 text-xs text-muted-foreground">
-                <span>React</span>
-                <span>•</span>
-                <span>Ethereum</span>
-                <span>•</span>
-                <span>Hardhat</span>
-                <span>•</span>
-                <span>MetaMask</span>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <img src={reactIcon} alt="React" className="w-6 h-6" />
+                  <span className="text-sm text-muted-foreground">React</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <img src={ethereumIcon} alt="Ethereum" className="w-6 h-6" />
+                  <span className="text-sm text-muted-foreground">Ethereum</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <img src={hardhatIcon} alt="Hardhat" className="w-6 h-6" />
+                  <span className="text-sm text-muted-foreground">Hardhat</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <img src={metamaskIcon} alt="MetaMask" className="w-6 h-6" />
+                  <span className="text-sm text-muted-foreground">MetaMask</span>
+                </div>
               </div>
             </div>
 

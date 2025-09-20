@@ -6,56 +6,56 @@
 
 @layer base {
   :root {
-    /* VoteForge Brand Colors - HSL only */
-    --background: 225 15% 9%;
-    --foreground: 210 40% 98%;
+    /* VoteForge Light Theme - Strong Blue Accents */
+    --background: 0 0% 100%;
+    --foreground: 224 71.4% 4.1%;
 
-    --card: 225 15% 12%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 71.4% 4.1%;
 
-    --popover: 225 15% 12%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71.4% 4.1%;
 
-    /* VoteForge Primary - Electric blockchain blue */
-    --primary: 234 89% 74%;
-    --primary-foreground: 225 15% 9%;
+    /* VoteForge Primary - Strong Blue */
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
 
-    /* VoteForge Secondary - Deep purple */
-    --secondary: 262 83% 58%;
-    --secondary-foreground: 210 40% 98%;
+    /* VoteForge Secondary - Accent Blue */
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
 
-    --muted: 225 15% 15%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 225 15% 18%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    /* VoteForge Success - Crypto green */
-    --success: 160 84% 39%;
-    --success-foreground: 210 40% 98%;
+    /* VoteForge Success - Green */
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 355.7 100% 97.3%;
 
-    --border: 225 15% 20%;
-    --input: 225 15% 15%;
-    --ring: 234 89% 74%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
 
     --radius: 0.75rem;
 
-    /* VoteForge Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(234 89% 74%), hsl(262 83% 58%));
-    --gradient-secondary: linear-gradient(135deg, hsl(262 83% 58%), hsl(234 89% 74%));
-    --gradient-hero: linear-gradient(135deg, hsl(225 15% 9%), hsl(225 15% 12%));
-    --gradient-card: linear-gradient(135deg, hsl(225 15% 12% / 0.8), hsl(225 15% 15% / 0.6));
-    --gradient-voter: linear-gradient(135deg, hsl(234 89% 74% / 0.2), hsl(234 89% 74% / 0.05));
-    --gradient-admin: linear-gradient(135deg, hsl(262 83% 58% / 0.2), hsl(262 83% 58% / 0.05));
+    /* VoteForge Light Theme Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(221.2 83.2% 53.3%), hsl(221.2 83.2% 43.3%));
+    --gradient-secondary: linear-gradient(135deg, hsl(210 40% 96%), hsl(210 40% 90%));
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 100%), hsl(210 40% 98%));
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 100% / 0.9), hsl(210 40% 98% / 0.8));
+    --gradient-voter: linear-gradient(135deg, hsl(221.2 83.2% 53.3% / 0.1), hsl(221.2 83.2% 53.3% / 0.05));
+    --gradient-admin: linear-gradient(135deg, hsl(221.2 83.2% 53.3% / 0.15), hsl(221.2 83.2% 53.3% / 0.08));
 
-    /* VoteForge Shadows & Effects */
-    --shadow-elegant: 0 25px 50px -12px hsl(234 89% 74% / 0.25);
-    --shadow-glow: 0 0 40px hsl(234 89% 74% / 0.3);
-    --shadow-card: 0 8px 32px -4px hsl(225 15% 5% / 0.5);
-    --shadow-floating: 0 20px 25px -5px hsl(225 15% 5% / 0.4);
+    /* VoteForge Light Theme Shadows & Effects */
+    --shadow-elegant: 0 25px 50px -12px hsl(221.2 83.2% 53.3% / 0.25);
+    --shadow-glow: 0 0 40px hsl(221.2 83.2% 53.3% / 0.15);
+    --shadow-card: 0 8px 32px -4px hsl(221.2 83.2% 53.3% / 0.1);
+    --shadow-floating: 0 20px 25px -5px hsl(221.2 83.2% 53.3% / 0.15);
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -70,7 +70,7 @@
 
   body {
     @apply bg-background text-foreground;
-    background: linear-gradient(135deg, hsl(225 15% 9%), hsl(225 15% 12%));
+    background: linear-gradient(135deg, hsl(0 0% 100%), hsl(210 40% 98%));
     min-height: 100vh;
   }
 
@@ -113,7 +113,7 @@
   .orb-1 {
     width: 400px;
     height: 400px;
-    background: radial-gradient(circle, hsl(234 89% 74% / 0.3), transparent);
+    background: radial-gradient(circle, hsl(221.2 83.2% 53.3% / 0.15), transparent);
     top: -200px;
     left: -200px;
     animation-delay: 0s;
@@ -122,7 +122,7 @@
   .orb-2 {
     width: 300px;
     height: 300px;
-    background: radial-gradient(circle, hsl(262 83% 58% / 0.3), transparent);
+    background: radial-gradient(circle, hsl(221.2 83.2% 53.3% / 0.1), transparent);
     bottom: -150px;
     right: -150px;
     animation-delay: 2s;
@@ -131,7 +131,7 @@
   .orb-3 {
     width: 250px;
     height: 250px;
-    background: radial-gradient(circle, hsl(160 84% 39% / 0.2), transparent);
+    background: radial-gradient(circle, hsl(142.1 76.2% 36.3% / 0.08), transparent);
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -217,10 +217,10 @@
 
 @keyframes blockchain-pulse {
   0%, 100% {
-    box-shadow: 0 0 0 0 hsl(234 89% 74% / 0.7);
+    box-shadow: 0 0 0 0 hsl(221.2 83.2% 53.3% / 0.7);
   }
   50% {
-    box-shadow: 0 0 0 20px hsl(234 89% 74% / 0);
+    box-shadow: 0 0 0 20px hsl(221.2 83.2% 53.3% / 0);
   }
 }
 
