@@ -1,5 +1,5 @@
 {
-  "name": "blockchain",
+  "name": "dappvotes-blockchain",
   "version": "1.0.0",
   "description": "VoteForge blockchain smart contracts",
   "main": "index.js",

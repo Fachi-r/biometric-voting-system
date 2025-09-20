@@ -20,7 +20,7 @@ async function main() {
   const abi = artifact.abi;
 
   // Create the contracts directory in src if it doesn't exist
-  const contractsDir = path.join(__dirname, "../src/contracts");
+  const contractsDir = path.join(__dirname, "../../src/contracts");
   if (!fs.existsSync(contractsDir)) {
     fs.mkdirSync(contractsDir, { recursive: true });
   }
