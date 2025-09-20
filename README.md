@@ -1,4 +1,4 @@
-# Project Monorepo
+# DECENTRALIZED BIOMETRIC VOTING PLATFORM
 
 This repository contains all components for the project.
 
@@ -9,7 +9,7 @@ This repository contains all components for the project.
 - `/esp32` – ESP32 firmware (Arduino IDE)
 
 ## Requirements
-- [pnpm](https://pnpm.io) installed globally
+- npm installed globally
 - Node.js (LTS)
 <!-- - Python 3.10+ (if you end up using FastAPI) -->
 - Arduino IDE for ESP32 firmware
@@ -17,13 +17,16 @@ This repository contains all components for the project.
 ## Scripts
 Install dependencies in all subfolders:
 ```bash
-pnpm install --recursive
+cd into the blochain folder and run npm install
+cd info the frontend folder and run npm install
 ```
 
 ### Development
 Run all services except ESP32 in parallel:
 ```bash 
-pnpm dev
+blockchain folder : 1st = npx hardhat node
+                    2nd = npx hardhat run scripts/deploy.js --network localhost
+frontend folder  : npm run dev 
 ```
 
 ## Notes
