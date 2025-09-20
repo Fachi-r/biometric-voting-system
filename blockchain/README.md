@@ -22,7 +22,7 @@ blockchain/
 ## ⚙️ Install Dependencies
 ```bash
 cd blockchain
-pnpm install
+npm install
 # or
 npm install
 # or
@@ -36,7 +36,11 @@ npx hardhat compile
 ### 🧪 Run Tests
 ```bash
 npx hardhat test
-```
+
+
+
+
+```(START HERE !!!!!!)
 ### 🧱 Start Local Hardhat Node
 ```bash
 npx hardhat node
