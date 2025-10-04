@@ -101,7 +101,7 @@ const Index = () => {
                 <p className="text-muted-foreground mb-6">
                   Create and oversee democratic processes. Ensure fair and transparent elections.
                 </p>
-                <Button className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 border-0">
+                <Button className="w-full bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary/90 hover:to-secondary/70 border-0">
                   Enter as Admin
                   <Fingerprint className="w-4 h-4 ml-2" />
                 </Button>

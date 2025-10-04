@@ -1,34 +1,31 @@
-import { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { RootState } from '@/store';
-import { disconnectWallet } from '@/store/slices/walletSlice';
-import { contractService, Poll } from '@/services/contractService';
-import { walletService } from '@/services/walletService';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import PollCard from '@/components/PollCard';
-import Navbar from '@/components/Navbar';
-import { Vote, Shield } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { RootState } from "@/store";
+import { disconnectWallet } from "@/store/slices/walletSlice";
+import { contractService, Poll, VoterData } from "@/services/contractService";
+import { walletService } from "@/services/walletService";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import PollCard from "@/components/PollCard";
+import Navbar from "@/components/Navbar";
+import { Vote, Shield } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 const VoterDashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [polls, setPolls] = useState<Poll[]>([]);
   const [loading, setLoading] = useState(false);
+  const [voterInfo, setVoterInfo] = useState<VoterData | null>(null);
   const wallet = useSelector((state: RootState) => state.wallet);
-
-  const registeredVoters = JSON.parse(localStorage.getItem('registeredVoters') || '[]');
-  const voterInfo = registeredVoters.find(
-    (v: any) => v.walletAddress.toLowerCase() === wallet.address?.toLowerCase()
-  );
 
   useEffect(() => {
     if (wallet.isConnected) {
       loadPolls();
+      fetchVoterInfo();
     }
-  }, [wallet.isConnected]);
+  }, [wallet.isConnected, wallet.address]);
 
   const loadPolls = async () => {
     if (!wallet.isConnected) return;
@@ -45,6 +42,21 @@ const VoterDashboard = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchVoterInfo = async () => {
+    if (wallet.address) {
+      try {
+        const voter = await contractService.getVoter(wallet.address);
+        if (voter && voter.voterId) {
+          setVoterInfo(voter);
+        } else {
+          setVoterInfo(null);
+        }
+      } catch (error) {
+        setVoterInfo(null);
+      }
     }
   };
 
@@ -102,13 +114,17 @@ const VoterDashboard = () => {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-xl font-semibold mb-2">
-                        Welcome, {wallet.address?.slice(0, 6)}...{wallet.address?.slice(-4)}
-                      </h2>
-                      {voterInfo && (
-                        <div className="text-sm text-muted-foreground">
-                          Fingerprint ID: {voterInfo.fingerprintId}
-                        </div>
+                      {voterInfo ? (
+                        <h2 className="text-xl font-semibold mb-2">
+                          Welcome, {voterInfo.name}!<br />
+                          <span className="text-base text-muted-foreground">
+                            Voter ID: {voterInfo.voterId}
+                          </span>
+                        </h2>
+                      ) : (
+                        <h2 className="text-xl font-semibold mb-2">
+                          Welcome, {wallet.address?.slice(0, 6)}...{wallet.address?.slice(-4)}
+                        </h2>
                       )}
                       <p className="text-muted-foreground">Your participation helps shape our community's future.</p>
                     </div>

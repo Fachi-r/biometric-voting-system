@@ -216,7 +216,10 @@ const Navbar = () => {
               <Button
                 onClick={handleWalletConnect}
                 disabled={wallet.isLoading}
-                className="bg-blue-900 hover:bg-blue-800 text-white font-semibold"
+                className={isAdminPage 
+                  ? "bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary/90 hover:to-secondary/70"
+                  : "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                }
               >
                 {isAdminPage ? <Shield className="w-4 h-4 mr-2" /> : <Wallet className="w-4 h-4 mr-2" />}
                 {wallet.isLoading ? 'Connecting...' : 'Connect Wallet'}

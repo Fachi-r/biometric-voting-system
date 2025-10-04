@@ -29,6 +29,7 @@ const UpdatePollDialog = ({ open, onOpenChange, onSuccess, poll }: UpdatePollDia
     startDate: '',
     endDate: '',
   });
+  const [imagePreview, setImagePreview] = useState<string>('');
   const [candidates, setCandidates] = useState<Candidate[]>([
     { name: '', image: '' },
     { name: '', image: '' }
@@ -80,6 +81,31 @@ const UpdatePollDialog = ({ open, onOpenChange, onSuccess, poll }: UpdatePollDia
     const updated = [...candidates];
     updated[index][field] = value;
     setCandidates(updated);
+  };
+
+  const handlePollImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+        setFormData({ ...formData, image: file.name });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCandidateImageChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const updated = [...candidates];
+        updated[index].image = reader.result as string;
+        setCandidates(updated);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -138,11 +164,14 @@ const UpdatePollDialog = ({ open, onOpenChange, onSuccess, poll }: UpdatePollDia
     setUpdating(true);
     
     try {
+      // Store only filename reference on blockchain
+      const imageReference = formData.image || 'default-poll.jpg';
+      
       // Update the poll
       const pollTxHash = await contractService.updatePoll(poll.id, {
         title: formData.title,
         description: formData.description,
-        image: formData.image || '',
+        image: imageReference,
         startsAt: startTime,
         endsAt: endTime,
       });
@@ -152,6 +181,11 @@ const UpdatePollDialog = ({ open, onOpenChange, onSuccess, poll }: UpdatePollDia
         description: `Transaction: Poll Update - ${pollTxHash.slice(0, 10)}...`,
       });
 
+      // Store poll image locally if updated
+      if (imagePreview) {
+        localStorage.setItem(`poll_${poll.id}`, imagePreview);
+      }
+
       // Add new candidates to the poll
       const existingContestants = await contractService.getContestants(poll.id);
       const existingNames = existingContestants.map(c => c.name.toLowerCase());
@@ -159,9 +193,14 @@ const UpdatePollDialog = ({ open, onOpenChange, onSuccess, poll }: UpdatePollDia
       for (const candidate of validCandidates) {
         if (!existingNames.includes(candidate.name.toLowerCase())) {
           try {
+            // Store candidate image locally
+            if (candidate.image) {
+              localStorage.setItem(`candidate_${poll.id}_${candidate.name}`, candidate.image);
+            }
+            
             const candidateTxHash = await contractService.joinContest(poll.id, {
               name: candidate.name,
-              image: candidate.image || '',
+              image: candidate.image ? `candidate_${candidate.name}.jpg` : '',
             });
             
             toast({
@@ -213,12 +252,24 @@ const UpdatePollDialog = ({ open, onOpenChange, onSuccess, poll }: UpdatePollDia
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">Image URL</label>
-              <Input 
-                placeholder="https://example.com/image.jpg" 
-                value={formData.image}
-                onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
-              />
+              <label className="text-sm font-medium mb-2 block">Poll Image</label>
+              <div className="space-y-2">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePollImageChange}
+                  className="cursor-pointer"
+                />
+                {imagePreview && (
+                  <div className="relative w-full h-32 rounded-lg overflow-hidden border border-border/50">
+                    <img 
+                      src={imagePreview} 
+                      alt="Poll preview" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           
@@ -272,31 +323,44 @@ const UpdatePollDialog = ({ open, onOpenChange, onSuccess, poll }: UpdatePollDia
             
             <div className="space-y-3">
               {candidates.map((candidate, index) => (
-                <div key={index} className="flex space-x-3 items-start">
-                  <div className="flex-1">
-                    <Input
-                      placeholder={`Candidate ${index + 1} name`}
-                      value={candidate.name}
-                      onChange={(e) => updateCandidate(index, 'name', e.target.value)}
-                    />
+                <div key={index} className="p-4 border border-border/50 rounded-lg space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium">Candidate {index + 1}</h4>
+                    {candidates.length > 2 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeCandidate(index)}
+                      >
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      </Button>
+                    )}
                   </div>
-                  <div className="flex-1">
+
+                  <Input
+                    placeholder="Candidate Name"
+                    value={candidate.name}
+                    onChange={(e) => updateCandidate(index, 'name', e.target.value)}
+                  />
+
+                  <div className="space-y-2">
                     <Input
-                      placeholder="Avatar URL (optional)"
-                      value={candidate.image}
-                      onChange={(e) => updateCandidate(index, 'image', e.target.value)}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleCandidateImageChange(index, e)}
+                      className="cursor-pointer"
                     />
+                    {candidate.image && (
+                      <div className="relative w-full h-24 rounded-lg overflow-hidden border border-border/50">
+                        <img 
+                          src={candidate.image} 
+                          alt={`${candidate.name} preview`} 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => removeCandidate(index)}
-                    disabled={candidates.length <= 2}
-                    className="text-destructive border-destructive/50 hover:bg-destructive/10"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
                 </div>
               ))}
             </div>
