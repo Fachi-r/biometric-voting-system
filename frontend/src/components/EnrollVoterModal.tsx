@@ -9,6 +9,7 @@ import { toast } from '@/hooks/use-toast';
 import { contractService, VoterData } from '@/services/contractService';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
+import useWebSocket, { WEBSOCKET_URL } from '@/hooks/use-websocket';
 
 interface EnrollVoterModalProps {
   open: boolean;
@@ -23,7 +24,7 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
   const [registeredVoters, setRegisteredVoters] = useState<VoterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [txHash, setTxHash] = useState('');
-  
+
   const { address: connectedAddress } = useSelector((state: RootState) => state.wallet);
 
   // Load registered voters from blockchain
@@ -75,7 +76,11 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
     }
 
     if (!isValidAddress(voterAddress)) {
-      toast({ title: "Invalid Address", description: "Please enter a valid Ethereum wallet address", variant: "destructive" });
+      toast({
+        title: "Invalid Address",
+        description: "Please enter a valid Ethereum wallet address",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -94,7 +99,6 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
       // Continue if we can't check (user might not be connected)
     }
 
-    // Flip into scanning mode
     fetch(`${WEBSOCKET_URL}/fingerprint/enroll`, { method: 'POST', headers: { 'Content-Type': 'application/json' } })
       .then(response => {
         if (!response.ok) {
@@ -107,30 +111,29 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
       })
 
     setEnrollmentStep('scanning');
-    setIsScanning(true);
     setScanProgress(0);
 
     // Simulate fingerprint scanning
-    const interval = setInterval(() => {
-      setScanProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          // Simulate successful fingerprint capture
-          registerVoterOnBlockchain();
-          return 100;
-        }
-        return prev + 4;
-      });
-    }, 50);
+    // const interval = setInterval(() => {
+    //   setScanProgress((prev) => {
+    //     if (prev >= 100) {
+    //       clearInterval(interval);
+    //       // Simulate successful fingerprint capture
+    //       registerVoterOnBlockchain();
+    //       return 100;
+    //     }
+    //     return prev + 4;
+    //   });
+    // }, 50);
   };
 
   const registerVoterOnBlockchain = async () => {
     try {
       setEnrollmentStep('confirming');
-      
+
       // Generate unique fingerprint ID
       const fingerprintId = Date.now();
-      
+
       toast({
         title: "📝 Enrolling voter with fingerprint…",
         description: "Please confirm the transaction in MetaMask",
@@ -144,7 +147,7 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
 
       setTxHash(txHash);
       setEnrollmentStep('success');
-      
+
       toast({
         title: "✅ Voter registered successfully",
         description: `Transaction: ${txHash.slice(0, 10)}...${txHash.slice(-8)}`,
@@ -152,7 +155,7 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
 
       // Refresh voter list
       await loadVoters();
-      
+
       // Reset form after delay
       setTimeout(() => {
         resetEnrollment();
@@ -179,6 +182,54 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
     setScanProgress(0);
     setTxHash('');
   };
+
+  const { fingerprintStatus } = useWebSocket()
+
+  // React to fingerprint status updates
+  useEffect(() => {
+    if (!open) return;
+    console.log(fingerprintStatus);
+
+    switch (fingerprintStatus.status) {
+      case 'place_finger':
+      case 'place_finger_again':
+        setEnrollmentStep('scanning');
+        setScanProgress((prev) => Math.min(prev + 10, 100));
+        break;
+
+      case 'image_taken':
+      case 'image_taken_again':
+      case 'model_created':
+      case 'stored':
+      case 'downloading_template':
+        setScanProgress((prev) => Math.min(prev + 20, 100));
+        break;
+
+      case 'success':
+        setScanProgress(100);
+        setTimeout(() => {
+          registerVoterOnBlockchain();
+          setEnrollmentStep('input');
+        }, 1000);
+        break;
+
+      case 'error':
+        setEnrollmentStep('input');
+        // setIsScanning(false);
+        setScanProgress(0);
+        // optional: show error toast
+        toast({
+          title: "Fingerprint Error",
+          description: fingerprintStatus.message,
+          variant: "destructive",
+        });
+        break;
+
+      default:
+        break;
+    }
+  }, [fingerprintStatus, open]);
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -225,7 +276,8 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
                       className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
                       disabled={!voterAddress.trim() || !voterName.trim()}
                     >
-                      <Fingerprint className="w-4 h-4 mr-2" />
+                      <Fingerprint className="w-4 h-4 mr-2" />ard
+
                       Start Fingerprint Enrollment
                     </Button>
                   </div>
@@ -234,11 +286,11 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
                 {enrollmentStep === 'scanning' && (
                   <div className="text-center space-y-6">
                     <div className="relative w-24 h-24 mx-auto">
-                      <Fingerprint 
-                        className="w-24 h-24 text-primary fingerprint-scanner" 
+                      <Fingerprint
+                        className="w-24 h-24 text-primary fingerprint-scanner"
                       />
                       <div className="absolute inset-0 rounded-full border-4 border-primary/20">
-                        <div 
+                        <div
                           className="absolute inset-0 rounded-full border-4 border-t-primary transition-all duration-75 ease-linear"
                           style={{
                             transform: `rotate(${(scanProgress / 100) * 360}deg)`,
@@ -252,12 +304,10 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
                         {scanProgress}%
                       </div>
                       <div className="text-sm text-muted-foreground mb-4">
-                        {fingerprintStatus?.status === 'place_finger'
-                          ? "Please place your finger on the scanner..."
-                          : "Scanning fingerprint..."}
+                        Please hold your finger steady on the scanner...
                       </div>
                       <div className="w-full h-2 bg-muted rounded-full">
-                        <div 
+                        <div
                           className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-75 ease-linear"
                           style={{ width: `${scanProgress}%` }}
                         />
@@ -266,7 +316,7 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
 
                     <div className="flex items-center justify-center space-x-2 text-muted-foreground">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-sm">📖 Enrolling voter with fingerprint…</span>
+                      <span className="text-sm">{fingerprintStatus.message ?? "Enrolling voter with fingerprint…"}</span>
                     </div>
                   </div>
                 )}
@@ -276,7 +326,7 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
                     <div className="relative w-24 h-24 mx-auto">
                       <Wallet className="w-24 h-24 text-secondary blockchain-pulse" />
                     </div>
-                    
+
                     <div>
                       <h4 className="text-lg font-semibold text-secondary mb-2">
                         🔗 Confirm in MetaMask

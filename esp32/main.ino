@@ -5,11 +5,6 @@
 #include <WiFiClientSecure.h>
 #include <Adafruit_Fingerprint.h>
 
-// TODO: Add verification logic
-// TODO: Refactor messaging functions into messaging.cpp
-// TODO: Add global fingerprint counter to track stored fingerprint IDs
-// TODO: Add Duplex communication between Server and ESP32
-
 // Custom Modules
 #include "secrets.h"
 #include "messaging.h"
@@ -22,8 +17,6 @@ PubSubClient client(wifiClient);
 // Use HardwareSerial on ESP32
 HardwareSerial mySerial(1);
 Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
-
-// Forward decl
 
 void setup()  
 {
@@ -97,7 +90,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     uint16_t userId = doc["userId"] | enrolledCount;
 
     if (action == "verify") {
-      Serial.printf("Fingerprint: Verify request for user %d\n", userId);
+      Serial.printf("Fingerprint: Verify request");
       verifyFingerprint(); // pass userId if needed
     }
     else if (action == "enroll") {

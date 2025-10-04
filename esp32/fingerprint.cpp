@@ -226,4 +226,3 @@ uint8_t verifyFingerprint() {
 
   return p;
 }
-
