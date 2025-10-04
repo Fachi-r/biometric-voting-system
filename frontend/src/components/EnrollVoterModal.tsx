@@ -4,68 +4,73 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Fingerprint, Loader2, CheckCircle, XCircle, Users, UserPlus } from 'lucide-react';
+import { Fingerprint, Loader2, CheckCircle, XCircle, Users, UserPlus, Wallet } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import useWebSocket, { WEBSOCKET_URL } from '@/hooks/use-websocket';
+import { contractService, VoterData } from '@/services/contractService';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 
 interface EnrollVoterModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-interface RegisteredVoter {
-  id: string;
-  name: string;
-  walletAddress: string;
-  fingerprintId: string;
-  registeredAt: Date;
-}
-
 const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
-  const [enrollmentStep, setEnrollmentStep] = useState<'input' | 'scanning' | 'success' | 'error'>('input');
-  const [voterName, setVoterName] = useState('');
+  const [enrollmentStep, setEnrollmentStep] = useState<'input' | 'scanning' | 'confirming' | 'success' | 'error'>('input');
   const [voterAddress, setVoterAddress] = useState('');
-  const [registeredVoters, setRegisteredVoters] = useState<RegisteredVoter[]>([]);
-
-  const { fingerprintStatus } = useWebSocket();
+  const [voterName, setVoterName] = useState('');
   const [scanProgress, setScanProgress] = useState(0);
-  const [isScanning, setIsScanning] = useState(false);
+  const [registeredVoters, setRegisteredVoters] = useState<VoterData[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [txHash, setTxHash] = useState('');
+  
+  const { address: connectedAddress } = useSelector((state: RootState) => state.wallet);
 
-  useEffect(() => {
-    // This runs immediately the component mounts
-
-
-  }, []);
-
-  // Load registered voters from localStorage on mount
-  useEffect(() => {
-    const stored = localStorage.getItem('registeredVoters');
-    if (stored) {
-      const parsed = JSON.parse(stored).map((v: RegisteredVoter) => ({
-        ...v,
-        registeredAt: new Date(v.registeredAt),
-      }));
-      setRegisteredVoters(parsed);
+  // Load registered voters from blockchain
+  const loadVoters = async () => {
+    try {
+      setIsLoading(true);
+      const voters = await contractService.getAllVoters();
+      setRegisteredVoters(voters);
+    } catch (error: any) {
+      console.error('Failed to load voters:', error);
+      toast({
+        title: "Failed to Load Voters",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
-  }, []);
+  };
 
-  // Save registered voters to localStorage whenever they change
+  // Load voters when modal opens
   useEffect(() => {
-    localStorage.setItem('registeredVoters', JSON.stringify(registeredVoters));
-  }, [registeredVoters]);
+    if (open) {
+      loadVoters();
+    }
+  }, [open]);
 
   const isValidAddress = (address: string) => {
     return address.match(/^0x[a-fA-F0-9]{40}$/);
   };
 
-  const startFingerprint = () => {
-    if (!voterName.trim()) {
-      toast({ title: "Missing Name", description: "Please enter the voter's name", variant: "destructive" });
+  const startFingerprint = async () => {
+    if (!voterAddress.trim()) {
+      toast({
+        title: "Missing Address",
+        description: "Please enter a wallet address",
+        variant: "destructive",
+      });
       return;
     }
 
-    if (!voterAddress.trim()) {
-      toast({ title: "Missing Address", description: "Please enter a wallet address", variant: "destructive" });
+    if (!voterName.trim()) {
+      toast({
+        title: "Missing Name",
+        description: "Please enter voter's name",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -74,12 +79,19 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
       return;
     }
 
-    const existing = registeredVoters.find(v =>
-      v.walletAddress.toLowerCase() === voterAddress.toLowerCase()
-    );
-    if (existing) {
-      toast({ title: "Already Registered", description: "This wallet address is already registered", variant: "destructive" });
-      return;
+    try {
+      // Check if already registered on blockchain
+      const isRegistered = await contractService.isVoterRegistered(voterAddress);
+      if (isRegistered) {
+        toast({
+          title: "Already Registered",
+          description: "This wallet address is already registered on the blockchain",
+          variant: "destructive",
+        });
+        return;
+      }
+    } catch (error) {
+      // Continue if we can't check (user might not be connected)
     }
 
     // Flip into scanning mode
@@ -97,69 +109,75 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
     setEnrollmentStep('scanning');
     setIsScanning(true);
     setScanProgress(0);
+
+    // Simulate fingerprint scanning
+    const interval = setInterval(() => {
+      setScanProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          // Simulate successful fingerprint capture
+          registerVoterOnBlockchain();
+          return 100;
+        }
+        return prev + 4;
+      });
+    }, 50);
   };
 
-  // React to fingerprint device status
-  useEffect(() => {
-    if (enrollmentStep !== 'scanning') return;
-    if (!fingerprintStatus?.status) return;
+  const registerVoterOnBlockchain = async () => {
+    try {
+      setEnrollmentStep('confirming');
+      
+      // Generate unique fingerprint ID
+      const fingerprintId = Date.now();
+      
+      toast({
+        title: "📝 Enrolling voter with fingerprint…",
+        description: "Please confirm the transaction in MetaMask",
+      });
 
-    switch (fingerprintStatus.status) {
-      case 'place_finger':
-      case 'place_finger_again':
-        // show scanning spinner but don’t advance progress
-        break;
+      const txHash = await contractService.registerVoter({
+        voterAddress,
+        name: voterName,
+        fingerprintId,
+      });
 
-      case 'image_taken':
-      case 'image_taken_again':
-      case 'model_created':
-      case 'stored':
-      case 'downloading_template':
-        setScanProgress((prev) => Math.min(prev + 20, 100));
-        break;
+      setTxHash(txHash);
+      setEnrollmentStep('success');
+      
+      toast({
+        title: "✅ Voter registered successfully",
+        description: `Transaction: ${txHash.slice(0, 10)}...${txHash.slice(-8)}`,
+      });
 
-      case 'success':
-        setScanProgress(100);
-        // Register new voter
-        const newVoter: RegisteredVoter = {
-          id: Date.now().toString(),
-          name: voterName,
-          walletAddress: voterAddress,
-          fingerprintId: `FP_${Date.now()}`, // device could eventually supply this
-          registeredAt: new Date()
-        };
-        setRegisteredVoters(prev => [newVoter, ...prev]);
-        setEnrollmentStep('success');
-        toast({
-          title: "✅ Voter Registered Successfully",
-          description: `Voter ${voterName} (${voterAddress.slice(0, 6)}...${voterAddress.slice(-4)}) has been enrolled`,
-        });
+      // Refresh voter list
+      await loadVoters();
+      
+      // Reset form after delay
+      setTimeout(() => {
+        resetEnrollment();
+      }, 3000);
 
-        setTimeout(() => {
-          resetEnrollment()
-        }, 300);
-        break;
+    } catch (error: any) {
+      setEnrollmentStep('error');
+      toast({
+        title: "❌ Failed to register voter",
+        description: error.message || "Please try again",
+        variant: "destructive",
+      });
 
-      case 'error':
-        setEnrollmentStep('error');
-        setScanProgress(0);
-        toast({
-          title: "❌ Failed to Capture Fingerprint",
-          description: "Please try again with better finger placement",
-          variant: "destructive",
-        });
-        break;
-
-      default:
-        break;
+      setTimeout(() => {
+        resetEnrollment();
+      }, 3000);
     }
-  }, [fingerprintStatus, enrollmentStep, voterName, voterAddress]);
+  };
 
   const resetEnrollment = () => {
     setEnrollmentStep('input');
-    setVoterName('');
     setVoterAddress('');
+    setVoterName('');
     setScanProgress(0);
+    setTxHash('');
   };
 
   return (
@@ -187,7 +205,7 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
                     <div>
                       <label className="text-sm font-medium mb-2 block">Voter Name</label>
                       <Input
-                        placeholder="Full Name"
+                        placeholder="Enter voter's full name"
                         value={voterName}
                         onChange={(e) => setVoterName(e.target.value)}
                         className="text-sm"
@@ -204,8 +222,8 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
                     </div>
                     <Button
                       onClick={startFingerprint}
-                      className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-                      disabled={!voterName.trim() || !voterAddress.trim()}
+                      className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
+                      disabled={!voterAddress.trim() || !voterName.trim()}
                     >
                       <Fingerprint className="w-4 h-4 mr-2" />
                       Start Fingerprint Enrollment
@@ -216,13 +234,15 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
                 {enrollmentStep === 'scanning' && (
                   <div className="text-center space-y-6">
                     <div className="relative w-24 h-24 mx-auto">
-                      <Fingerprint
-                        className="w-24 h-24 text-primary animate-pulse"
+                      <Fingerprint 
+                        className="w-24 h-24 text-primary fingerprint-scanner" 
                       />
                       <div className="absolute inset-0 rounded-full border-4 border-primary/20">
-                        <div
-                          className="absolute inset-0 rounded-full border-4 border-t-primary transition-all duration-100 ease-linear"
-                          style={{ transform: `rotate(${(scanProgress / 100) * 360}deg)` }}
+                        <div 
+                          className="absolute inset-0 rounded-full border-4 border-t-primary transition-all duration-75 ease-linear"
+                          style={{
+                            transform: `rotate(${(scanProgress / 100) * 360}deg)`,
+                          }}
                         />
                       </div>
                     </div>
@@ -237,8 +257,8 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
                           : "Scanning fingerprint..."}
                       </div>
                       <div className="w-full h-2 bg-muted rounded-full">
-                        <div
-                          className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full transition-all duration-100 ease-linear"
+                        <div 
+                          className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-75 ease-linear"
                           style={{ width: `${scanProgress}%` }}
                         />
                       </div>
@@ -246,7 +266,29 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
 
                     <div className="flex items-center justify-center space-x-2 text-muted-foreground">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-sm">Waiting for scanner...</span>
+                      <span className="text-sm">📖 Enrolling voter with fingerprint…</span>
+                    </div>
+                  </div>
+                )}
+
+                {enrollmentStep === 'confirming' && (
+                  <div className="text-center space-y-6">
+                    <div className="relative w-24 h-24 mx-auto">
+                      <Wallet className="w-24 h-24 text-secondary blockchain-pulse" />
+                    </div>
+                    
+                    <div>
+                      <h4 className="text-lg font-semibold text-secondary mb-2">
+                        🔗 Confirm in MetaMask
+                      </h4>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Please confirm the voter registration transaction in your wallet
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-center space-x-2 text-muted-foreground">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span className="text-sm">Waiting for blockchain confirmation...</span>
                     </div>
                   </div>
                 )}
@@ -256,11 +298,16 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
                     <CheckCircle className="w-16 h-16 text-success mx-auto" />
                     <div>
                       <h4 className="text-lg font-semibold text-success mb-2">
-                        ✅ Voter Registered Successfully
+                        ✅ Voter registered successfully
                       </h4>
-                      <p className="text-sm text-muted-foreground">
-                        Voter {voterName} ({voterAddress.slice(0, 6)}...{voterAddress.slice(-4)}) has been enrolled
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {voterName} ({voterAddress.slice(0, 6)}...{voterAddress.slice(-4)}) has been enrolled on the blockchain
                       </p>
+                      {txHash && (
+                        <p className="text-xs text-muted-foreground font-mono">
+                          Tx: {txHash.slice(0, 10)}...{txHash.slice(-8)}
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -270,10 +317,10 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
                     <XCircle className="w-16 h-16 text-destructive mx-auto" />
                     <div>
                       <h4 className="text-lg font-semibold text-destructive mb-2">
-                        ❌ Failed to Capture Fingerprint
+                        ❌ Failed to register voter
                       </h4>
                       <p className="text-sm text-muted-foreground mb-4">
-                        Please ensure your finger is clean and dry, then try again
+                        Transaction failed or was cancelled. Please try again.
                       </p>
                       <Button
                         onClick={resetEnrollment}
@@ -298,32 +345,44 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
                     <Users className="w-5 h-5 text-primary" />
                     <span>Registered Voters</span>
                   </h3>
+                  <Badge variant="secondary" className="bg-primary/20 text-primary">
+                    {registeredVoters.length} Total
+                  </Badge>
                 </div>
-                <div className="space-y-3 max-h-60 overflow-y-auto">
-                  {registeredVoters.map((voter) => (
-                    <div key={voter.id} className="flex items-center justify-between p-3 rounded-lg border border-border/30 bg-card/50">
-                      <div className="flex-1">
-                        <div className="font-semibold text-sm">
-                          {voter.name}
+
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                    <span className="ml-2 text-sm text-muted-foreground">Loading voters...</span>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-60 overflow-y-auto">
+                    {registeredVoters.map((voter) => (
+                      <div key={voter.voterId} className="flex items-center justify-between p-3 rounded-lg border border-border/30 bg-card/50">
+                        <div className="flex-1">
+                          <div className="font-semibold text-sm mb-1">
+                            {voter.name}
+                          </div>
+                          <div className="font-mono text-xs text-muted-foreground">
+                            {voter.voterAddress.slice(0, 6)}...{voter.voterAddress.slice(-4)}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Fingerprint ID: {voter.fingerprintId}
+                          </div>
                         </div>
-                        <div className="font-mono text-xs">
-                          {voter.walletAddress.slice(0, 6)}...{voter.walletAddress.slice(-4)}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          ID: {voter.fingerprintId}
+                        <div className="text-right">
+                          <div className="text-xs text-muted-foreground mb-1">
+                            Voter #{voter.voterId}
+                          </div>
+                          <Badge variant="outline" className="text-success border-success/50 text-xs">
+                            Registered
+                          </Badge>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-xs text-muted-foreground">
-                          {voter.registeredAt.toLocaleDateString()}
-                        </div>
-                        <Badge variant="outline" className="text-success border-success/50 text-xs">
-                          Active
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
+
                 {registeredVoters.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">
                     <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />

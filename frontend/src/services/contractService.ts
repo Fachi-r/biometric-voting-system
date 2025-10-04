@@ -51,6 +51,20 @@ export interface ContestData {
   image: string;
 }
 
+export interface VoterData {
+  voterAddress: string;
+  name: string;
+  fingerprintId: number;
+  voterId: number;
+  registered: boolean;
+}
+
+export interface RegisterVoterData {
+  voterAddress: string;
+  name: string;
+  fingerprintId: number;
+}
+
 class ContractService {
   private contract: ethers.Contract | null = null;
   private signer: ethers.JsonRpcSigner | null = null;
@@ -64,6 +78,56 @@ class ContractService {
       contract.abi,
       signer
     );
+    
+    // Set up event listeners for blockchain events
+    this.setupEventListeners();
+  }
+
+  // Set up event listeners for all contract events
+  private setupEventListeners(): void {
+    if (!this.contract) return;
+
+    // Listen for VoterRegistered events
+    this.contract.on("VoterRegistered", (voterAddress: string, voterId: bigint, name: string, fingerprintId: bigint) => {
+      console.log(`✅ Voter Registered: ${name} (${voterAddress}) with ID ${voterId.toString()} and fingerprint ${fingerprintId.toString()}`);
+    });
+
+    // Listen for ContestantAdded events  
+    this.contract.on("ContestantAdded", (pollId: bigint, contestantId: bigint, account: string, name: string) => {
+      console.log(`👤 Candidate Added: ${name} (#${contestantId.toString()}) to poll #${pollId.toString()}`);
+    });
+
+    // Listen for PollCreated events
+    this.contract.on("PollCreated", (pollId: bigint, director: string, title: string) => {
+      console.log(`📢 Poll Created: "${title}" (#${pollId.toString()}) by ${director}`);
+    });
+
+    // Listen for PollUpdated events
+    this.contract.on("PollUpdated", (pollId: bigint, title: string) => {
+      console.log(`✏️ Poll Updated: "${title}" (#${pollId.toString()})`);
+    });
+
+    // Listen for PollDeleted events
+    this.contract.on("PollDeleted", (pollId: bigint) => {
+      console.log(`🗑️ Poll Deleted (#${pollId.toString()})`);
+    });
+
+    // Listen for VoteCast events
+    this.contract.on("VoteCast", (pollId: bigint, contestantId: bigint, voter: string) => {
+      console.log(`🗳️ Vote Cast: ${voter} voted for candidate #${contestantId.toString()} in poll #${pollId.toString()}`);
+    });
+  }
+
+  // Clean up event listeners
+  private removeEventListeners(): void {
+    if (!this.contract) return;
+    
+    this.contract.removeAllListeners("VoterRegistered");
+    this.contract.removeAllListeners("ContestantAdded");
+    this.contract.removeAllListeners("PollCreated");
+    this.contract.removeAllListeners("PollUpdated");
+    this.contract.removeAllListeners("PollDeleted");
+    this.contract.removeAllListeners("VoteCast");
   }
 
   // Check if contract is initialized
@@ -254,6 +318,67 @@ class ContractService {
       return pollIds.map((id: any) => Number(id));
     } catch (error: any) {
       throw new Error(`Failed to fetch user polls: ${error.message}`);
+    }
+  }
+
+  // Register a voter
+  async registerVoter(voterData: RegisterVoterData): Promise<string> {
+    this.ensureInitialized();
+    try {
+      const tx = await this.contract!.registerVoter(
+        voterData.voterAddress,
+        voterData.name,
+        voterData.fingerprintId
+      );
+      
+      await tx.wait();
+      return tx.hash;
+    } catch (error: any) {
+      throw new Error(`Failed to register voter: ${error.message}`);
+    }
+  }
+
+  // Get all registered voters
+  async getAllVoters(): Promise<VoterData[]> {
+    this.ensureInitialized();
+    try {
+      const voters = await this.contract!.getAllVoters();
+      return voters.map((voter: any) => ({
+        voterAddress: voter.voterAddress,
+        name: voter.name,
+        fingerprintId: Number(voter.fingerprintId),
+        voterId: Number(voter.voterId),
+        registered: voter.registered,
+      }));
+    } catch (error: any) {
+      throw new Error(`Failed to fetch voters: ${error.message}`);
+    }
+  }
+
+  // Check if voter is registered
+  async isVoterRegistered(voterAddress: string): Promise<boolean> {
+    this.ensureInitialized();
+    try {
+      return await this.contract!.isVoterRegistered(voterAddress);
+    } catch (error: any) {
+      throw new Error(`Failed to check voter registration: ${error.message}`);
+    }
+  }
+
+  // Get voter details
+  async getVoter(voterAddress: string): Promise<VoterData> {
+    this.ensureInitialized();
+    try {
+      const voter = await this.contract!.getVoter(voterAddress);
+      return {
+        voterAddress: voter.voterAddress,
+        name: voter.name,
+        fingerprintId: Number(voter.fingerprintId),
+        voterId: Number(voter.voterId),
+        registered: voter.registered,
+      };
+    } catch (error: any) {
+      throw new Error(`Failed to fetch voter: ${error.message}`);
     }
   }
 }

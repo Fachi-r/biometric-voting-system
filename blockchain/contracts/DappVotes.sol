@@ -24,17 +24,29 @@ contract DappVotes {
         uint votes;
     }
 
+    struct Voter {
+        address voterAddress;
+        string name;
+        uint256 fingerprintId;
+        uint256 voterId;
+        bool registered;
+    }
+
     uint public totalPolls;
+    uint public voterCount;
     mapping(uint => Poll) public polls;
     mapping(uint => mapping(uint => Contestant)) public contestants;
     mapping(uint => mapping(address => bool)) public hasVoted;
     mapping(address => uint[]) public userPolls;
+    mapping(address => Voter) public voters;
+    Voter[] public voterList;
 
     event PollCreated(uint indexed pollId, address indexed director, string title);
     event PollUpdated(uint indexed pollId, string title);
     event PollDeleted(uint indexed pollId);
     event ContestantAdded(uint indexed pollId, uint indexed contestantId, address indexed account, string name);
     event VoteCast(uint indexed pollId, uint indexed contestantId, address indexed voter);
+    event VoterRegistered(address indexed voterAddress, uint256 indexed voterId, string name, uint256 fingerprintId);
 
     modifier onlyDirector(uint _pollId) {
         require(polls[_pollId].director == msg.sender, "Only poll director can perform this action");
@@ -212,5 +224,44 @@ contract DappVotes {
         } else {
             return "ended";
         }
+    }
+
+    function registerVoter(
+        address _voterAddress,
+        string memory _name,
+        uint256 _fingerprintId
+    ) public returns (uint256) {
+        require(!voters[_voterAddress].registered, "Voter already registered");
+        require(bytes(_name).length > 0, "Name cannot be empty");
+        require(_fingerprintId > 0, "Invalid fingerprint ID");
+
+        voterCount++;
+
+        Voter memory newVoter = Voter({
+            voterAddress: _voterAddress,
+            name: _name,
+            fingerprintId: _fingerprintId,
+            voterId: voterCount,
+            registered: true
+        });
+
+        voters[_voterAddress] = newVoter;
+        voterList.push(newVoter);
+
+        emit VoterRegistered(_voterAddress, voterCount, _name, _fingerprintId);
+        return voterCount;
+    }
+
+    function getAllVoters() public view returns (Voter[] memory) {
+        return voterList;
+    }
+
+    function isVoterRegistered(address _voterAddress) public view returns (bool) {
+        return voters[_voterAddress].registered;
+    }
+
+    function getVoter(address _voterAddress) public view returns (Voter memory) {
+        require(voters[_voterAddress].registered, "Voter not registered");
+        return voters[_voterAddress];
     }
 }

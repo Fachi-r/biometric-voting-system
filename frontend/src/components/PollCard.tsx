@@ -178,25 +178,37 @@ const PollCard = ({ poll, onVoteComplete }: PollCardProps) => {
               const votePercentage = totalVotes > 0 ? (contestant.votes / totalVotes) * 100 : 0;
               
               return (
-                <div key={contestant.id} className="p-3 rounded-lg border border-border/30 bg-card/50">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-3">
-                      {contestant.image && (
-                        <img 
-                          src={contestant.image} 
-                          alt={contestant.name}
-                          className="w-8 h-8 rounded-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
-                      )}
-                      <span className="font-medium">{contestant.name}</span>
+                  <div key={contestant.id} className="p-3 rounded-lg border border-border/30 bg-card/50">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-3">
+                        {(() => {
+                          // Try to load from localStorage first
+                          const storedImage = localStorage.getItem(`candidate_${poll.id}_${contestant.name}`);
+                          const imageToShow = storedImage || contestant.image;
+                          
+                          return imageToShow ? (
+                            <img 
+                              src={imageToShow} 
+                              alt={contestant.name}
+                              className="w-16 h-16 rounded-full object-cover border-2 border-primary/20"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary/20">
+                              <span className="text-2xl font-bold text-primary">
+                                {contestant.name.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                          );
+                        })()}
+                        <span className="font-medium text-base">{contestant.name}</span>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {contestant.votes} votes
+                      </div>
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      {contestant.votes} votes
-                    </div>
-                  </div>
                   
                   <div className="space-y-2">
                     <Progress value={votePercentage} className="h-2" />

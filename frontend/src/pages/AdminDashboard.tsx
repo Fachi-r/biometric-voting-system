@@ -181,7 +181,7 @@ const AdminDashboard = () => {
                 </div>
                 
                 <Button 
-                  className="bg-primary hover:bg-primary/90 text-white font-semibold"
+                  className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
                   onClick={() => setIsCreateDialogOpen(true)}
                 >
                   <Plus className="w-4 h-4 mr-2" />
@@ -384,17 +384,7 @@ const AdminDashboard = () => {
                     </Button>
                   </div>
 
-                  <div className="border-t border-border/30 pt-4">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Registered Voters</span>
-                      <Badge variant="secondary" className="bg-primary/20 text-primary">
-                        3 Active
-                      </Badge>
-                    </div>
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      Latest enrollment: 2 hours ago
-                    </div>
-                  </div>
+                  
                 </CardContent>
               </Card>
 

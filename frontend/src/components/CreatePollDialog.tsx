@@ -28,6 +28,7 @@ const CreatePollDialog = ({ open, onOpenChange, onSuccess }: CreatePollDialogPro
     startDate: '',
     endDate: '',
   });
+  const [imagePreview, setImagePreview] = useState<string>('');
   const [candidates, setCandidates] = useState<Candidate[]>([
     { name: '', image: '' },
     { name: '', image: '' }
@@ -49,6 +50,31 @@ const CreatePollDialog = ({ open, onOpenChange, onSuccess }: CreatePollDialogPro
     const updated = [...candidates];
     updated[index][field] = value;
     setCandidates(updated);
+  };
+
+  const handlePollImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+        setFormData({ ...formData, image: file.name });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCandidateImageChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const updated = [...candidates];
+        updated[index].image = reader.result as string;
+        setCandidates(updated);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -116,11 +142,13 @@ const CreatePollDialog = ({ open, onOpenChange, onSuccess }: CreatePollDialogPro
     setCreating(true);
     
     try {
-      // Create the poll
+      // Store only filename reference on blockchain
+      const imageReference = formData.image || 'default-poll.jpg';
+      
       const pollTxHash = await contractService.createPoll({
         title: formData.title,
         description: formData.description,
-        image: formData.image || '',
+        image: imageReference,
         startsAt: startTime,
         endsAt: endTime,
       });
@@ -134,12 +162,22 @@ const CreatePollDialog = ({ open, onOpenChange, onSuccess }: CreatePollDialogPro
       const polls = await contractService.getPolls();
       const newPollId = Math.max(...polls.map(p => p.id));
 
+      // Store poll image locally
+      if (imagePreview) {
+        localStorage.setItem(`poll_${newPollId}`, imagePreview);
+      }
+
       // Add candidates to the poll
       for (const candidate of validCandidates) {
         try {
+          // Store candidate image locally
+          if (candidate.image) {
+            localStorage.setItem(`candidate_${newPollId}_${candidate.name}`, candidate.image);
+          }
+          
           await contractService.joinContest(newPollId, {
             name: candidate.name,
-            image: candidate.image || '',
+            image: candidate.image ? `candidate_${candidate.name}.jpg` : '',
           });
         } catch (error: any) {
           console.error(`Error adding candidate ${candidate.name}:`, error);
@@ -163,6 +201,7 @@ const CreatePollDialog = ({ open, onOpenChange, onSuccess }: CreatePollDialogPro
         { name: '', image: '' },
         { name: '', image: '' }
       ]);
+      setImagePreview('');
 
       onOpenChange(false);
       onSuccess?.();
@@ -198,29 +237,23 @@ const CreatePollDialog = ({ open, onOpenChange, onSuccess }: CreatePollDialogPro
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">Image Upload</label>
+              <label className="text-sm font-medium mb-2 block">Poll Image (Optional)</label>
               <div className="space-y-2">
-                <Input 
+                <Input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onload = (e) => {
-                        setFormData(prev => ({ ...prev, image: e.target?.result as string }));
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }}
-                  className="file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-primary/10 file:text-primary"
+                  onChange={handlePollImageChange}
+                  className="cursor-pointer"
                 />
-                <div className="text-xs text-muted-foreground">Or enter URL:</div>
-                <Input 
-                  placeholder="https://example.com/image.jpg" 
-                  value={formData.image.startsWith('data:') ? '' : formData.image}
-                  onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
-                />
+                {imagePreview && (
+                  <div className="relative w-full h-32 rounded-lg overflow-hidden border border-border/50">
+                    <img 
+                      src={imagePreview} 
+                      alt="Poll preview" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -275,31 +308,44 @@ const CreatePollDialog = ({ open, onOpenChange, onSuccess }: CreatePollDialogPro
             
             <div className="space-y-3">
               {candidates.map((candidate, index) => (
-                <div key={index} className="flex space-x-3 items-start">
-                  <div className="flex-1">
-                    <Input
-                      placeholder={`Candidate ${index + 1} name`}
-                      value={candidate.name}
-                      onChange={(e) => updateCandidate(index, 'name', e.target.value)}
-                    />
+                <div key={index} className="p-4 border border-border/50 rounded-lg space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium">Candidate {index + 1}</h4>
+                    {candidates.length > 2 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeCandidate(index)}
+                      >
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      </Button>
+                    )}
                   </div>
-                  <div className="flex-1">
+
+                  <Input
+                    placeholder="Candidate Name"
+                    value={candidate.name}
+                    onChange={(e) => updateCandidate(index, 'name', e.target.value)}
+                  />
+
+                  <div className="space-y-2">
                     <Input
-                      placeholder="Avatar URL (optional)"
-                      value={candidate.image}
-                      onChange={(e) => updateCandidate(index, 'image', e.target.value)}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleCandidateImageChange(index, e)}
+                      className="cursor-pointer"
                     />
+                    {candidate.image && (
+                      <div className="relative w-full h-24 rounded-lg overflow-hidden border border-border/50">
+                        <img 
+                          src={candidate.image} 
+                          alt={`${candidate.name} preview`} 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => removeCandidate(index)}
-                    disabled={candidates.length <= 2}
-                    className="text-destructive border-destructive/50 hover:bg-destructive/10"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
                 </div>
               ))}
             </div>

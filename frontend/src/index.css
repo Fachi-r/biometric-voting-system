@@ -6,56 +6,65 @@
 
 @layer base {
   :root {
-    /* VoteForge Light Theme - Strong Blue Accents */
-    --background: 0 0% 100%;
-    --foreground: 224 71.4% 4.1%;
+    /* Light + Neon Theme */
+    --background: 220 9% 97%; /* Soft White #F9FAFB */
+    --foreground: 215 28% 17%; /* Charcoal Gray #111827 */
 
-    --card: 0 0% 100%;
-    --card-foreground: 224 71.4% 4.1%;
+    --card: 220 13% 91%; /* Light Gray #E5E7EB */
+    --card-foreground: 215 28% 17%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 224 71.4% 4.1%;
+    --popover: 220 9% 97%;
+    --popover-foreground: 215 28% 17%;
 
-    /* VoteForge Primary - Strong Blue */
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
+    /* Neon Blue Primary */
+    --primary: 217 91% 60%; /* Neon Blue #3B82F6 */
+    --primary-foreground: 0 0% 100%;
 
-    /* VoteForge Secondary - Accent Blue */
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
+    /* Neon Purple Secondary */
+    --secondary: 258 90% 66%; /* Neon Purple #8B5CF6 */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 13% 91%;
+    --muted-foreground: 220 9% 46%; /* Medium Gray #4B5563 */
 
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
+    --accent: 258 90% 66%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 69%; /* Bright Red #F87171 */
+    --destructive-foreground: 0 0% 100%;
 
-    /* VoteForge Success - Green */
-    --success: 142.1 76.2% 36.3%;
-    --success-foreground: 355.7 100% 97.3%;
+    /* Neon Green Success */
+    --success: 158 64% 52%; /* Neon Green #10B981 */
+    --success-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    /* Warning and Info */
+    --warning: 43 96% 56%; /* Amber #FBBF24 */
+    --warning-foreground: 0 0% 0%;
+
+    --info: 199 89% 48%; /* Sky Blue #38BDF8 */
+    --info-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 217 91% 60%;
 
     --radius: 0.75rem;
 
-    /* VoteForge Light Theme Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(221.2 83.2% 53.3%), hsl(221.2 83.2% 43.3%));
-    --gradient-secondary: linear-gradient(135deg, hsl(210 40% 96%), hsl(210 40% 90%));
-    --gradient-hero: linear-gradient(135deg, hsl(0 0% 100%), hsl(210 40% 98%));
-    --gradient-card: linear-gradient(135deg, hsl(0 0% 100% / 0.9), hsl(210 40% 98% / 0.8));
-    --gradient-voter: linear-gradient(135deg, hsl(221.2 83.2% 53.3% / 0.1), hsl(221.2 83.2% 53.3% / 0.05));
-    --gradient-admin: linear-gradient(135deg, hsl(221.2 83.2% 53.3% / 0.15), hsl(221.2 83.2% 53.3% / 0.08));
+    /* Light + Neon Theme Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(258 90% 66%));
+    --gradient-secondary: linear-gradient(135deg, hsl(220 13% 91%), hsl(220 9% 97%));
+    --gradient-hero: linear-gradient(135deg, hsl(220 9% 97%), hsl(220 13% 91%));
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 100% / 0.9), hsl(220 13% 91% / 0.8));
+    --gradient-voter: linear-gradient(135deg, hsl(217 91% 60% / 0.1), hsl(258 90% 66% / 0.05));
+    --gradient-admin: linear-gradient(135deg, hsl(217 91% 60% / 0.15), hsl(258 90% 66% / 0.08));
+    --gradient-neon: linear-gradient(135deg, hsl(217 91% 60%), hsl(258 90% 66%), hsl(158 64% 52%));
 
-    /* VoteForge Light Theme Shadows & Effects */
-    --shadow-elegant: 0 25px 50px -12px hsl(221.2 83.2% 53.3% / 0.25);
-    --shadow-glow: 0 0 40px hsl(221.2 83.2% 53.3% / 0.15);
-    --shadow-card: 0 8px 32px -4px hsl(221.2 83.2% 53.3% / 0.1);
-    --shadow-floating: 0 20px 25px -5px hsl(221.2 83.2% 53.3% / 0.15);
+    /* Light + Neon Theme Shadows & Effects */
+    --shadow-elegant: 0 25px 50px -12px hsl(217 91% 60% / 0.25);
+    --shadow-glow: 0 0 40px hsl(217 91% 60% / 0.15);
+    --shadow-card: 0 8px 32px -4px hsl(217 91% 60% / 0.1);
+    --shadow-floating: 0 20px 25px -5px hsl(217 91% 60% / 0.15);
+    --shadow-neon: 0 0 30px hsl(217 91% 60% / 0.4);
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -70,8 +79,18 @@
 
   body {
     @apply bg-background text-foreground;
-    background: linear-gradient(135deg, hsl(0 0% 100%), hsl(210 40% 98%));
+    background: linear-gradient(135deg, hsl(220 9% 97%), hsl(220 13% 91%));
     min-height: 100vh;
+  }
+
+  /* Remove horizontal scrollbar and prevent horizontal overflow */
+  html, body {
+    overflow-x: hidden;
+  }
+
+  body, #root, .min-h-screen, .container {
+    max-width: 100vw;
+    overflow-x: hidden;
   }
 
   /* Scrollbar styling */
@@ -113,7 +132,7 @@
   .orb-1 {
     width: 400px;
     height: 400px;
-    background: radial-gradient(circle, hsl(221.2 83.2% 53.3% / 0.15), transparent);
+    background: radial-gradient(circle, hsl(217 91% 60% / 0.15), transparent);
     top: -200px;
     left: -200px;
     animation-delay: 0s;
@@ -122,7 +141,7 @@
   .orb-2 {
     width: 300px;
     height: 300px;
-    background: radial-gradient(circle, hsl(221.2 83.2% 53.3% / 0.1), transparent);
+    background: radial-gradient(circle, hsl(258 90% 66% / 0.12), transparent);
     bottom: -150px;
     right: -150px;
     animation-delay: 2s;
@@ -131,7 +150,7 @@
   .orb-3 {
     width: 250px;
     height: 250px;
-    background: radial-gradient(circle, hsl(142.1 76.2% 36.3% / 0.08), transparent);
+    background: radial-gradient(circle, hsl(158 64% 52% / 0.08), transparent);
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -217,10 +236,10 @@
 
 @keyframes blockchain-pulse {
   0%, 100% {
-    box-shadow: 0 0 0 0 hsl(221.2 83.2% 53.3% / 0.7);
+    box-shadow: 0 0 0 0 hsl(217 91% 60% / 0.7);
   }
   50% {
-    box-shadow: 0 0 0 20px hsl(221.2 83.2% 53.3% / 0);
+    box-shadow: 0 0 0 20px hsl(217 91% 60% / 0);
   }
 }
 
