@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Hardhat build outputs
+artifacts/
+cache/
+typechain/
+
+# Logs
+*.log
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Env files (secrets)
+.env
+.env.local
+.env.*.local
+
+# Test coverage
+coverage/
+lcov-report/
+
+# Optional: deployment artifacts (if generated locally)
+deployed-addresses.json
+deployments/
