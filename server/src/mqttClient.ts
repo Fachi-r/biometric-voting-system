@@ -14,10 +14,6 @@ export let lastSeenTimestamp = new Date();
 // --- Topics ---
 const TOPICS = {
   HEALTH: "esp32/health",
-  SENSOR: "esp32/sensor-data",
-  BULB_STATUS: "esp32/bulb-status",
-  BULB_COMMAND: "esp32/bulb-command",
-
   FP_COMMAND: "esp32/fingerprint/command",
   FP_STATUS: "esp32/fingerprint/status",
   FP_RESULT: "esp32/fingerprint/result",
@@ -53,20 +49,6 @@ mqttClient.on("message", (topic, message) => {
       broadcastData(JSON.stringify({ type: "esp32-health", status: payload.status }));
       break;
 
-    case TOPICS.BULB_STATUS:
-      broadcastData(JSON.stringify({ type: "bulb-status", isOn: payload.bulb }));
-      break;
-
-    case TOPICS.SENSOR:
-      broadcastData(
-        JSON.stringify({
-          type: "sensor-data",
-          temperature: payload.temperature,
-          humidity: payload.humidity,
-        })
-      );
-      break;
-
     // 🔐 Fingerprint updates
     case TOPICS.FP_STATUS:
       broadcastData(JSON.stringify({ type: "fingerprint-status", ...payload }));
@@ -86,10 +68,6 @@ mqttClient.on("message", (topic, message) => {
 });
 
 // --- Helper functions for publishing fingerprint commands ---
-export const sendBulbCommand = (state: "on" | "off") => {
-  mqttClient.publish(TOPICS.BULB_COMMAND, JSON.stringify({ command: state }));
-};
-
 export const requestFingerprintVerify = (userId: number | null = null) => {
   mqttClient.publish(TOPICS.FP_COMMAND, JSON.stringify({ action: "verify", userId }));
 };

@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Fingerprint, Loader2, CheckCircle, XCircle, Users, UserPlus } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import useWebSocket, { WEBSOCKET_URL } from '@/hooks/use-websocket';
 
 interface EnrollVoterModalProps {
   open: boolean;
@@ -24,15 +25,22 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
   const [enrollmentStep, setEnrollmentStep] = useState<'input' | 'scanning' | 'success' | 'error'>('input');
   const [voterName, setVoterName] = useState('');
   const [voterAddress, setVoterAddress] = useState('');
-  const [scanProgress, setScanProgress] = useState(0);
   const [registeredVoters, setRegisteredVoters] = useState<RegisteredVoter[]>([]);
-  const [showVotersList, setShowVotersList] = useState(false);
+
+  const { fingerprintStatus } = useWebSocket();
+  const [scanProgress, setScanProgress] = useState(0);
+  const [isScanning, setIsScanning] = useState(false);
+
+  useEffect(() => {
+    // This runs immediately the component mounts
+
+
+  }, []);
 
   // Load registered voters from localStorage on mount
   useEffect(() => {
     const stored = localStorage.getItem('registeredVoters');
     if (stored) {
-      // Convert registeredAt back to Date object
       const parsed = JSON.parse(stored).map((v: RegisteredVoter) => ({
         ...v,
         registeredAt: new Date(v.registeredAt),
@@ -52,95 +60,100 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
 
   const startFingerprint = () => {
     if (!voterName.trim()) {
-      toast({
-        title: "Missing Name",
-        description: "Please enter the voter's name",
-        variant: "destructive",
-      });
+      toast({ title: "Missing Name", description: "Please enter the voter's name", variant: "destructive" });
       return;
     }
 
     if (!voterAddress.trim()) {
-      toast({
-        title: "Missing Address",
-        description: "Please enter a wallet address",
-        variant: "destructive",
-      });
+      toast({ title: "Missing Address", description: "Please enter a wallet address", variant: "destructive" });
       return;
     }
 
     if (!isValidAddress(voterAddress)) {
-      toast({
-        title: "Invalid Address",
-        description: "Please enter a valid Ethereum wallet address",
-        variant: "destructive",
-      });
+      toast({ title: "Invalid Address", description: "Please enter a valid Ethereum wallet address", variant: "destructive" });
       return;
     }
 
-    // Check if already registered
-    const existing = registeredVoters.find(v => 
+    const existing = registeredVoters.find(v =>
       v.walletAddress.toLowerCase() === voterAddress.toLowerCase()
     );
-    
     if (existing) {
-      toast({
-        title: "Already Registered",
-        description: "This wallet address is already registered",
-        variant: "destructive",
-      });
+      toast({ title: "Already Registered", description: "This wallet address is already registered", variant: "destructive" });
       return;
     }
 
-    setEnrollmentStep('scanning');
-    setScanProgress(0);
-
-    // Simulate fingerprint scanning
-    const interval = setInterval(() => {
-      setScanProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          // Randomly simulate success/failure for demo
-          const success = Math.random() > 0.2; // 80% success rate
-          
-          if (success) {
-            // Add to registered voters
-            const newVoter: RegisteredVoter = {
-              id: Date.now().toString(),
-              name: voterName,
-              walletAddress: voterAddress,
-              fingerprintId: `FP_${Date.now()}`,
-              registeredAt: new Date()
-            };
-            setRegisteredVoters(prev => [newVoter, ...prev]);
-            setEnrollmentStep('success');
-            
-            toast({
-              title: "✅ Voter Registered Successfully",
-              description: `Voter ${voterName} (${voterAddress.slice(0, 6)}...${voterAddress.slice(-4)}) has been enrolled`,
-            });
-          } else {
-            setEnrollmentStep('error');
-            toast({
-              title: "❌ Failed to Capture Fingerprint", 
-              description: "Please try again with better finger placement",
-              variant: "destructive",
-            });
-          }
-          
-          setTimeout(() => {
-            setEnrollmentStep('input');
-            setVoterName('');
-            setVoterAddress('');
-            setScanProgress(0);
-          }, 3000);
-          
-          return 100;
+    // Flip into scanning mode
+    fetch(`${WEBSOCKET_URL}/fingerprint/enroll`, { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
         }
-        return prev + 3;
-      });
-    }, 60);
+        return response.json();
+      })
+      .then(data => {
+        console.log('Fingerprint scan initiated:', data);
+      })
+
+    setEnrollmentStep('scanning');
+    setIsScanning(true);
+    setScanProgress(0);
   };
+
+  // React to fingerprint device status
+  useEffect(() => {
+    if (enrollmentStep !== 'scanning') return;
+    if (!fingerprintStatus?.status) return;
+
+    switch (fingerprintStatus.status) {
+      case 'place_finger':
+      case 'place_finger_again':
+        // show scanning spinner but don’t advance progress
+        break;
+
+      case 'image_taken':
+      case 'image_taken_again':
+      case 'model_created':
+      case 'stored':
+      case 'downloading_template':
+        setScanProgress((prev) => Math.min(prev + 20, 100));
+        break;
+
+      case 'success':
+        setScanProgress(100);
+        // Register new voter
+        const newVoter: RegisteredVoter = {
+          id: Date.now().toString(),
+          name: voterName,
+          walletAddress: voterAddress,
+          fingerprintId: `FP_${Date.now()}`, // device could eventually supply this
+          registeredAt: new Date()
+        };
+        setRegisteredVoters(prev => [newVoter, ...prev]);
+        setEnrollmentStep('success');
+        toast({
+          title: "✅ Voter Registered Successfully",
+          description: `Voter ${voterName} (${voterAddress.slice(0, 6)}...${voterAddress.slice(-4)}) has been enrolled`,
+        });
+
+        setTimeout(() => {
+          resetEnrollment()
+        }, 300);
+        break;
+
+      case 'error':
+        setEnrollmentStep('error');
+        setScanProgress(0);
+        toast({
+          title: "❌ Failed to Capture Fingerprint",
+          description: "Please try again with better finger placement",
+          variant: "destructive",
+        });
+        break;
+
+      default:
+        break;
+    }
+  }, [fingerprintStatus, enrollmentStep, voterName, voterAddress]);
 
   const resetEnrollment = () => {
     setEnrollmentStep('input');
@@ -189,7 +202,7 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
                         className="font-mono text-sm"
                       />
                     </div>
-                    <Button 
+                    <Button
                       onClick={startFingerprint}
                       className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
                       disabled={!voterName.trim() || !voterAddress.trim()}
@@ -203,28 +216,28 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
                 {enrollmentStep === 'scanning' && (
                   <div className="text-center space-y-6">
                     <div className="relative w-24 h-24 mx-auto">
-                      <Fingerprint 
-                        className="w-24 h-24 text-primary animate-pulse" 
+                      <Fingerprint
+                        className="w-24 h-24 text-primary animate-pulse"
                       />
                       <div className="absolute inset-0 rounded-full border-4 border-primary/20">
-                        <div 
+                        <div
                           className="absolute inset-0 rounded-full border-4 border-t-primary transition-all duration-100 ease-linear"
-                          style={{
-                            transform: `rotate(${(scanProgress / 100) * 360}deg)`,
-                          }}
+                          style={{ transform: `rotate(${(scanProgress / 100) * 360}deg)` }}
                         />
                       </div>
                     </div>
-                    
+
                     <div>
                       <div className="text-lg font-semibold text-primary mb-2">
                         {scanProgress}%
                       </div>
                       <div className="text-sm text-muted-foreground mb-4">
-                        Please hold your finger steady on the scanner...
+                        {fingerprintStatus?.status === 'place_finger'
+                          ? "Please place your finger on the scanner..."
+                          : "Scanning fingerprint..."}
                       </div>
                       <div className="w-full h-2 bg-muted rounded-full">
-                        <div 
+                        <div
                           className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full transition-all duration-100 ease-linear"
                           style={{ width: `${scanProgress}%` }}
                         />
@@ -233,7 +246,7 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
 
                     <div className="flex items-center justify-center space-x-2 text-muted-foreground">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-sm">Scanning fingerprint...</span>
+                      <span className="text-sm">Waiting for scanner...</span>
                     </div>
                   </div>
                 )}
@@ -262,7 +275,7 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
                       <p className="text-sm text-muted-foreground mb-4">
                         Please ensure your finger is clean and dry, then try again
                       </p>
-                      <Button 
+                      <Button
                         onClick={resetEnrollment}
                         variant="outline"
                         className="text-primary border-primary/50 hover:bg-primary/10"
@@ -323,8 +336,8 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
         </div>
 
         <div className="flex justify-end mt-6">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => onOpenChange(false)}
           >
             Close

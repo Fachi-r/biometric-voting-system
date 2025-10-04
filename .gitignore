@@ -48,6 +48,9 @@ blockchain/typechain-types
 /blockchain/deployments/
 /blockchain/ignition/deployments/
 
+# Generated Accounts
+blockchain/src/contracts/accounts.json
+
 # solidity-coverage files
 /blockchain/coverage
 /blockchain/coverage.json

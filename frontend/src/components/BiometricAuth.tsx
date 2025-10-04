@@ -5,44 +5,84 @@ import { RootState } from '@/store';
 import { closeBiometricAuth } from '@/store/slices/modalSlice';
 import { Fingerprint, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import useWebSocket, { WEBSOCKET_URL } from '@/hooks/use-websocket';
 
+// BiometricAuth Component
 const BiometricAuth = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { biometricAuth } = useSelector((state: RootState) => state.modal);
+
+  const { fingerprintStatus } = useWebSocket(); // live data from ESP32
+
   const [scanProgress, setScanProgress] = useState(0);
   const [isScanning, setIsScanning] = useState(false);
 
   useEffect(() => {
     if (biometricAuth.isOpen) {
+      // This runs immediately the component mounts
+      fetch(`${WEBSOCKET_URL}/fingerprint/verify`, { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log('Fingerprint scan initiated:', data);
+        })
+        
       setIsScanning(true);
       setScanProgress(0);
-      
-      const interval = setInterval(() => {
-        setScanProgress((prev) => {
-          if (prev >= 100) {
-            clearInterval(interval);
-            setTimeout(() => {
-              setIsScanning(false);
-              dispatch(closeBiometricAuth());
-              if (biometricAuth.role === 'voter') {
-                navigate('/voter-dashboard');
-              } else if (biometricAuth.role === 'admin') {
-                navigate('/admin-dashboard');
-              }
-            }, 500);
-            return 100;
-          }
-          return prev + 2;
-        });
-      }, 40);
-
-      return () => {
-        clearInterval(interval);
-        setIsScanning(false);
-      };
+    } else {
+      setIsScanning(false);
+      setScanProgress(0);
     }
-  }, [biometricAuth.isOpen, biometricAuth.role, dispatch, navigate]);
+  }, [biometricAuth.isOpen]);
+
+  // React to fingerprint status updates
+  useEffect(() => {
+    if (!biometricAuth.isOpen) return;
+    console.log(fingerprintStatus);
+
+    switch (fingerprintStatus.status) {
+      case 'place_finger':
+      case 'place_finger_again':
+        setIsScanning(true);
+        break;
+
+      case 'image_taken':
+      case 'image_taken_again':
+      case 'model_created':
+      case 'stored':
+      case 'downloading_template':
+        setScanProgress((prev) => Math.min(prev + 20, 100));
+        break;
+
+      case 'success':
+        setScanProgress(100);
+        setTimeout(() => {
+          setIsScanning(false);
+          dispatch(closeBiometricAuth());
+
+          if (biometricAuth.role === 'voter') {
+            navigate('/voter-dashboard');
+          } else if (biometricAuth.role === 'admin') {
+            navigate('/admin-dashboard');
+          }
+        }, 1000);
+        break;
+
+      case 'error':
+        setIsScanning(false);
+        setScanProgress(0);
+        // optional: show error toast
+        break;
+
+      default:
+        break;
+    }
+  }, [fingerprintStatus, biometricAuth.isOpen, biometricAuth.role, dispatch, navigate]);
 
   const handleClose = () => {
     dispatch(closeBiometricAuth());
@@ -57,23 +97,22 @@ const BiometricAuth = () => {
           <div className="text-center space-y-2">
             <h2 className="text-2xl font-bold gradient-text">Biometric Authentication</h2>
             <p className="text-muted-foreground">
-              Please place your finger on the scanner
+              {fingerprintStatus.message}
             </p>
           </div>
 
           <div className="relative">
             {/* Fingerprint Icon */}
             <div className="relative w-32 h-32 flex items-center justify-center">
-              <Fingerprint 
-                className={`w-24 h-24 text-primary transition-all duration-300 ${
-                  isScanning ? 'fingerprint-scanner blockchain-pulse' : ''
-                }`} 
+              <Fingerprint
+                className={`w-24 h-24 text-primary transition-all duration-300 ${isScanning ? 'fingerprint-scanner blockchain-pulse' : ''
+                  }`}
               />
-              
+
               {/* Scanning overlay */}
               {isScanning && (
                 <div className="absolute inset-0 rounded-full border-4 border-primary/20">
-                  <div 
+                  <div
                     className="absolute inset-0 rounded-full border-4 border-t-primary transition-all duration-100 ease-linear"
                     style={{
                       transform: `rotate(${(scanProgress / 100) * 360}deg)`,
@@ -89,7 +128,7 @@ const BiometricAuth = () => {
                 {scanProgress}%
               </div>
               <div className="w-32 h-2 bg-muted rounded-full mt-2">
-                <div 
+                <div
                   className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-100 ease-linear"
                   style={{ width: `${scanProgress}%` }}
                 />
@@ -104,7 +143,7 @@ const BiometricAuth = () => {
                 <span className="text-sm">Scanning fingerprint...</span>
               </>
             ) : (
-              <span className="text-sm">Waiting for fingerprint...</span>
+              <span className="text-sm">{fingerprintStatus.message || "Waiting for fingerprint..."}</span>
             )}
           </div>
 
