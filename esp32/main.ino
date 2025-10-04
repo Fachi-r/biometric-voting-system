@@ -101,6 +101,15 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
       Serial.println("Fingerprint: Download templates request");
       downloadAllTemplates(20, 3); // adjust args as needed
     }
+    else if (action == "enrolled-count") {
+      Serial.println("Fingerprint: Get Enrollment Count");
+      publishEnrolmentCount();
+    }
+    else if (action == "reset-enrollments") {
+      Serial.println("Resetting all enrollments...");
+      resetEnrolmentCount();
+      publishEnrolmentCount();
+    }
     else {
       Serial.printf("Unknown fingerprint action: %s\n", action.c_str());
     }

@@ -41,6 +41,12 @@ void publishTemplate(uint16_t id, const String& hexTemplate) {
   Serial.println("MQTT Published (template): " + payload);
 }
 
+void publishEnrolmentCount() {
+  String payload = "{\"enrolledCount\":" + String(enrolledCount) + "}";
+  client.publish(TOPIC_FP_COUNT, payload.c_str());
+  Serial.println("MQTT Published (enrolledCount): " + payload);
+}
+
 void sendHeartbeat() {
   String statusPayload = "{\"status\":\"alive\"}";
   client.publish(TOPIC_HEALTH, statusPayload.c_str());

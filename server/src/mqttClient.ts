@@ -16,6 +16,7 @@ const TOPICS = {
   HEALTH: "esp32/health",
   FP_COMMAND: "esp32/fingerprint/command",
   FP_STATUS: "esp32/fingerprint/status",
+  FP_COUNT: "esp32/fingerprint/count",
   FP_RESULT: "esp32/fingerprint/result",
   FP_TEMPLATES: "esp32/fingerprint/templates",
 };
@@ -54,6 +55,10 @@ mqttClient.on("message", (topic, message) => {
       broadcastData(JSON.stringify({ type: "fingerprint-status", ...payload }));
       break;
 
+    case TOPICS.FP_COUNT:
+      broadcastData(JSON.stringify({ type: "fingerprint-status", ...payload }));
+      break;
+
     case TOPICS.FP_RESULT:
       broadcastData(JSON.stringify({ type: "fingerprint-result", ...payload }));
       break;
@@ -78,4 +83,13 @@ export const requestFingerprintEnroll = (userId: number | null = null) => {
 
 export const requestFingerprintTemplates = () => {
   mqttClient.publish(TOPICS.FP_COMMAND, JSON.stringify({ action: "download-templates" }));
+};
+
+export const requestEnrollmentCount = () => {
+  mqttClient.publish(TOPICS.FP_COMMAND, JSON.stringify({ action: "enrolled-count" }))
+};
+
+// Debug purposes
+export const requestResetTemplates = () => {
+  mqttClient.publish(TOPICS.FP_COMMAND, JSON.stringify({ action: "reset-enrollments" }));
 };

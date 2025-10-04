@@ -226,3 +226,25 @@ uint8_t verifyFingerprint() {
 
   return p;
 }
+
+void resetEnrolmentCount() {
+  // Clear sensor’s database
+  int p = finger.emptyDatabase();
+  if (p == FINGERPRINT_OK) {
+    Serial.println("Fingerprint database cleared.");
+  } else {
+    Serial.print("Error clearing database, code: ");
+    Serial.println(p);
+    publishEnrolmentStatus(STATUS_ERROR, "Failed to clear database");
+    return;
+  }
+
+  // Reset counter in Preferences
+  enrolledCount = 0;
+  preferences.putUInt("enrolledCount", enrolledCount);
+  Serial.println("Enrollment count reset to 0");
+
+  // Publish new state
+  publishEnrolmentCount();
+  publishEnrolmentStatus(STATUS_SUCCESS, "Enrollment reset complete");
+}
