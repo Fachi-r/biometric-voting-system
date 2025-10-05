@@ -50,6 +50,16 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
     if (open) {
       loadVoters();
     }
+    fetch(`${WEBSOCKET_URL}/fingerprint/enrolled`, { headers: { 'Content-Type': 'application/json' } })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Enrollment count requested:', data);
+      })
   }, [open]);
 
   const isValidAddress = (address: string) => {
@@ -99,7 +109,12 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
       // Continue if we can't check (user might not be connected)
     }
 
-    fetch(`${WEBSOCKET_URL}/fingerprint/enroll`, { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+    fetch(`${WEBSOCKET_URL}/fingerprint/enroll`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: fingerprintCount
+      })
+    })
       .then(response => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -132,7 +147,9 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
       setEnrollmentStep('confirming');
 
       // Generate unique fingerprint ID
-      const fingerprintId = Date.now();
+      const hashedTemplate = fingerprintTemplate?.template // TODO: Add Hashing function here
+      const fingerprintHash = hashedTemplate;
+      const fingerprintId = fingerprintTemplate?.id
 
       toast({
         title: "📝 Enrolling voter with fingerprint…",
@@ -143,6 +160,7 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
         voterAddress,
         name: voterName,
         fingerprintId,
+        fingerprintHash,
       });
 
       setTxHash(txHash);
@@ -183,12 +201,14 @@ const EnrollVoterModal = ({ open, onOpenChange }: EnrollVoterModalProps) => {
     setTxHash('');
   };
 
-  const { fingerprintStatus } = useWebSocket()
+  const { fingerprintStatus, fingerprintCount, fingerprintTemplate } = useWebSocket()
 
   // React to fingerprint status updates
   useEffect(() => {
     if (!open) return;
-    console.log(fingerprintStatus);
+    console.log("Status: ", fingerprintStatus);
+    console.log("Count: ", fingerprintCount);
+    console.log("Template: ", fingerprintTemplate);
 
     switch (fingerprintStatus.status) {
       case 'place_finger':

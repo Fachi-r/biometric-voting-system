@@ -7,6 +7,7 @@ import {
   requestEnrollmentCount,
   requestResetTemplates,
   requestFingerprintTemplateById,
+  requestFingerprintEnrollWithId,
 } from "./mqttClient";
 
 const router = express.Router();
@@ -31,8 +32,10 @@ router.post("/fingerprint/verify", (req, res) => {
 
 router.post("/fingerprint/enroll", (req, res) => {
   const { userId } = req.body;
-
-  requestFingerprintEnroll(userId);
+  userId ?
+    requestFingerprintEnrollWithId(userId)
+    :
+    requestFingerprintEnroll();
   res.json({ message: `Enroll request sent for user ${userId}` });
 });
 

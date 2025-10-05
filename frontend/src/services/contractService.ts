@@ -55,6 +55,7 @@ export interface VoterData {
   voterAddress: string;
   name: string;
   fingerprintId: number;
+  fingerprintHash: string;
   voterId: number;
   registered: boolean;
 }
@@ -63,6 +64,7 @@ export interface RegisterVoterData {
   voterAddress: string;
   name: string;
   fingerprintId: number;
+  fingerprintHash: string;
 }
 
 class ContractService {
@@ -78,7 +80,7 @@ class ContractService {
       contract.abi,
       signer
     );
-    
+
     // Set up event listeners for blockchain events
     this.setupEventListeners();
   }
@@ -121,7 +123,7 @@ class ContractService {
   // Clean up event listeners
   private removeEventListeners(): void {
     if (!this.contract) return;
-    
+
     this.contract.removeAllListeners("VoterRegistered");
     this.contract.removeAllListeners("ContestantAdded");
     this.contract.removeAllListeners("PollCreated");
@@ -211,7 +213,7 @@ class ContractService {
         pollData.startsAt,
         pollData.endsAt
       );
-      
+
       await tx.wait();
       return tx.hash;
     } catch (error: any) {
@@ -231,7 +233,7 @@ class ContractService {
         pollData.startsAt,
         pollData.endsAt
       );
-      
+
       await tx.wait();
       return tx.hash;
     } catch (error: any) {
@@ -260,7 +262,7 @@ class ContractService {
         contestData.name,
         contestData.image
       );
-      
+
       await tx.wait();
       return tx.hash;
     } catch (error: any) {
@@ -330,7 +332,7 @@ class ContractService {
         voterData.name,
         voterData.fingerprintId
       );
-      
+
       await tx.wait();
       return tx.hash;
     } catch (error: any) {
@@ -374,6 +376,7 @@ class ContractService {
         voterAddress: voter.voterAddress,
         name: voter.name,
         fingerprintId: Number(voter.fingerprintId),
+        fingerprintHash: voter.fingerprintHash,
         voterId: Number(voter.voterId),
         registered: voter.registered,
       };

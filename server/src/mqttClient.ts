@@ -1,13 +1,27 @@
 import dotenv from "dotenv";
-import mqtt from "mqtt";
+// import mqtt from "mqtt";
 import { broadcastData } from "./webSocket";
 
 dotenv.config();
 
-export const mqttClient = mqtt.connect(process.env.MQTT_BROKER_URL || "", {
-  username: process.env.MQTT_USERNAME,
-  password: process.env.MQTT_PASSWORD,
-});
+// export const mqttClient = mqtt.connect(process.env.MQTT_BROKER_URL || "", {
+//   username: process.env.MQTT_USERNAME,
+//   password: process.env.MQTT_PASSWORD,
+// });
+
+var mqtt = require('mqtt')
+
+var options = {
+  host: 'c5f129636b23466ebb160ad85a6c4ca4.s1.eu.hivemq.cloud',
+  port: 8883,
+  protocol: "mqtts",
+  username: "esp32-mqtt-server",
+  password: "6TXVXY-~aC'?pZZ"
+}
+
+// initialize the MQTT client
+export const mqttClient = mqtt.connect(options);
+
 
 export let lastSeenTimestamp = new Date();
 
@@ -31,11 +45,11 @@ mqttClient.on("connect", () => {
   });
 });
 
-mqttClient.on("error", (err) => {
+mqttClient.on("error", (err: any) => {
   console.error("MQTT Error:", err);
 });
 
-mqttClient.on("message", (topic, message) => {
+mqttClient.on("message", (topic: any, message: any) => {
   let payload: any;
   try {
     payload = JSON.parse(message.toString());
@@ -56,7 +70,7 @@ mqttClient.on("message", (topic, message) => {
       break;
 
     case TOPICS.FP_COUNT:
-      broadcastData(JSON.stringify({ type: "fingerprint-status", ...payload }));
+      broadcastData(JSON.stringify({ type: "fingerprint-count", ...payload }));
       break;
 
     case TOPICS.FP_RESULT:
@@ -64,7 +78,7 @@ mqttClient.on("message", (topic, message) => {
       break;
 
     case TOPICS.FP_TEMPLATES:
-      broadcastData(JSON.stringify({ type: "fingerprint-templates", templates: payload.templates }));
+      broadcastData(JSON.stringify({ type: "fingerprint-templates", ...payload }));
       break;
 
     default:
@@ -77,7 +91,11 @@ export const requestFingerprintVerify = (userId: number | null = null) => {
   mqttClient.publish(TOPICS.FP_COMMAND, JSON.stringify({ action: "verify", userId }));
 };
 
-export const requestFingerprintEnroll = (userId: number | null = null) => {
+export const requestFingerprintEnroll = () => {
+  mqttClient.publish(TOPICS.FP_COMMAND, JSON.stringify({ action: "enroll" }));
+};
+
+export const requestFingerprintEnrollWithId = (userId: number | null = null) => {
   mqttClient.publish(TOPICS.FP_COMMAND, JSON.stringify({ action: "enroll", userId }));
 };
 

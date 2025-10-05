@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 
-export const WEBSOCKET_URL = "https://mqtt-server-d88p.onrender.com";
-// export const WEBSOCKET_URL = "http://localhost:4000";
+// export const WEBSOCKET_URL = "https://mqtt-server-d88p.onrender.com";
+export const WEBSOCKET_URL = "http://localhost:4000";
 
 export default function useWebSocket() {
    const [healthStatus, setHealthStatus] = useState("");
@@ -46,8 +46,8 @@ export default function useWebSocket() {
                break;
 
             case "fingerprint-templates":
-               console.log("Got template: ", data.template, "\nFor ID: ", data.id);
-               setFingerprintTemplate({ id: data.id, template: data.template })
+               console.log("Got template: ", data?.template, "\nFor ID: ", data?.id);
+               setFingerprintTemplate({ id: data?.id, template: data?.template })
                break;
 
             default:
