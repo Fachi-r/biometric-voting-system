@@ -6,6 +6,7 @@ import {
   requestFingerprintTemplates,
   requestEnrollmentCount,
   requestResetTemplates,
+  requestFingerprintTemplateById,
 } from "./mqttClient";
 
 const router = express.Router();
@@ -36,7 +37,11 @@ router.post("/fingerprint/enroll", (req, res) => {
 });
 
 router.get("/fingerprint/templates", (req, res) => {
-  requestFingerprintTemplates();
+  const { userId } = req.body;
+  userId ?
+    requestFingerprintTemplateById(userId)
+    :
+    requestFingerprintTemplates();
   res.json({ message: "Requested fingerprint templates from ESP32" });
 });
 

@@ -21,47 +21,6 @@ String encodeTemplateHex(const uint8_t* buffer) {
   return encoded;
 }
 
-bool downloadTemplate(uint16_t id, uint8_t* outBuffer) {
-  // Load template into buffer 1
-  int p = finger.loadModel(id);
-  if (p != FINGERPRINT_OK) {
-    publishEnrolmentStatus(STATUS_ERROR, "Failed to load template.");
-    return false;
-  }
-
-  // Start transfer
-  p = finger.getModel();
-  if (p != FINGERPRINT_OK) {
-    publishEnrolmentStatus(STATUS_ERROR, "Failed to get model.");
-    return false;
-  }
-
-  uint8_t bytesReceived[534];
-  memset(bytesReceived, 0xFF, 534);
-
-  uint32_t startTime = millis();
-  int i = 0;
-  while (i < 534 && (millis() - startTime) < 10000) {
-    if (mySerial.available()) {
-      bytesReceived[i++] = mySerial.read();
-    }
-  }
-
-  if (i != 534) {
-    publishEnrolmentStatus(STATUS_ERROR, "Incomplete template received.");
-    return false;
-  }
-
-  // Extract the 512-byte template
-  int uindex = 9, index = 0;
-  memcpy(outBuffer + index, bytesReceived + uindex, 256);
-  uindex += 256 + 2 + 9;
-  index += 256;
-  memcpy(outBuffer + index, bytesReceived + uindex, 256);
-
-  return true;
-}
-
 uint8_t enrollFingerprint(uint16_t id) {
   enum EnrolmentState {
     STATE_WAIT_FINGER_1,
@@ -160,14 +119,16 @@ uint8_t enrollFingerprint(uint16_t id) {
 
       case STATE_DOWNLOAD_TEMPLATE:
         publishEnrolmentStatus(STATUS_DOWNLOADING_TEMPLATE, "Downloading template...");
+        // Use the new publishTemplate that accepts a raw buffer
         if (downloadTemplate(id, templateBuffer)) {
-          String hexTemplate = encodeTemplateHex(templateBuffer);
-          publishTemplate(id, hexTemplate);
+          publishTemplate(id, templateBuffer, TEMPLATE_SIZE);
           state = STATE_DONE;
         } else {
+          publishEnrolmentStatus(STATUS_ERROR, "Template download failed for ID " + String(id));
           return FINGERPRINT_PACKETRECIEVEERR;
         }
         break;
+
 
       case STATE_DONE:
         publishEnrolmentStatus(STATUS_SUCCESS, "Enrollment complete.");

@@ -85,6 +85,10 @@ export const requestFingerprintTemplates = () => {
   mqttClient.publish(TOPICS.FP_COMMAND, JSON.stringify({ action: "download-templates" }));
 };
 
+export const requestFingerprintTemplateById = (userId: number) => {
+  mqttClient.publish(TOPICS.FP_COMMAND, JSON.stringify({ action: "download-template", userId }));
+};
+
 export const requestEnrollmentCount = () => {
   mqttClient.publish(TOPICS.FP_COMMAND, JSON.stringify({ action: "enrolled-count" }))
 };

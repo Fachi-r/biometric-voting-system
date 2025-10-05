@@ -11,6 +11,7 @@ export default function useWebSocket() {
       message: "",
    });
    const [fingerprintCount, setFingerprintCount] = useState(0);
+   const [fingerprintTemplate, setFingerprintTemplate] = useState({ id: null, template: null });
 
    let heartbeatTimeout: ReturnType<typeof setTimeout>;
 
@@ -45,7 +46,8 @@ export default function useWebSocket() {
                break;
 
             case "fingerprint-templates":
-               console.log("Got template", data);
+               console.log("Got template: ", data.template, "\nFor ID: ", data.id);
+               setFingerprintTemplate({ id: data.id, template: data.template })
                break;
 
             default:
@@ -62,5 +64,5 @@ export default function useWebSocket() {
       };
    }, []);
 
-   return { healthStatus, fingerprintStatus, fingerprintCount };
+   return { healthStatus, fingerprintStatus, fingerprintCount, fingerprintTemplate };
 }

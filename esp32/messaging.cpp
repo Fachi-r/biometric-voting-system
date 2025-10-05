@@ -1,6 +1,8 @@
+#define MQTT_MAX_PACKET_SIZE 2048  // or 1500 — big enough for your base64 template + JSON
+#include <PubSubClient.h>
 #include "secrets.h"
 #include "messaging.h"
-#include <PubSubClient.h>
+#include <base64.h>  // Arduino Base64 helper
 
 // Reference MQTT client defined in .ino
 extern PubSubClient client;
@@ -28,17 +30,16 @@ void publishEnrolmentStatus(EnrolmentStatus status, String message) {
 }
 
 void publishResult(uint16_t id, bool success, const String& message) {
-  String payload = "{\"id\":" + String(id) +
-                   ",\"success\":" + String(success ? "true" : "false") +
-                   ",\"message\":\"" + message + "\"}";
+  String payload = "{\"id\":" + String(id) + ",\"success\":" + String(success ? "true" : "false") + ",\"message\":\"" + message + "\"}";
   client.publish(TOPIC_FP_RESULT, payload.c_str());
   Serial.println("MQTT Published (result): " + payload);
 }
 
-void publishTemplate(uint16_t id, const String& hexTemplate) {
-  String payload = "{\"id\":" + String(id) + ",\"template\":\"" + hexTemplate + "\"}";
+void publishTemplate(uint16_t id, const uint8_t* buffer, size_t length) {
+  String encoded = base64::encode(buffer, length);  // returns Arduino String
+  String payload = "{\"id\":" + String(id) + ",\"template\":\"" + encoded + "\"}";
   client.publish(TOPIC_FP_TEMPLATES, payload.c_str());
-  Serial.println("MQTT Published (template): " + payload);
+  Serial.println("MQTT Published (template, base64): " + payload);
 }
 
 void publishEnrolmentCount() {
