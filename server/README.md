@@ -18,11 +18,12 @@ This directory contains the backend server that bridges the frontend and ESP32 d
 ## Environment Variables
 Create `.env`:
 
-PORT=3000
-MQTT_BROKER_URL=mqtts://your-broker-url:8883
-MQTT_USERNAME=your-username
-MQTT_PASSWORD=your-password
-
+```bash
+PORT=4000
+MQTT_BROKER_URL="mqtts://<your-broker-url>:8883"
+MQTT_USERNAME="your-mqtt-username"
+MQTT_PASSWORD="your-mqtt-password"
+```
 
 ## How It Works
 - Receives data from the ESP32 via MQTT.

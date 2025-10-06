@@ -21,14 +21,14 @@ Create `secrets.h`:
 #define SECRETS_H
 
 // WiFi credentials
-#define WIFI_SSID     "yourWifi"
-#define WIFI_PASSWORD "yourPassword"
+#define WIFI_SSID     "<yourWifi>"
+#define WIFI_PASSWORD "<yourPassword>"
 
 // MQTT credentials
-#define MQTT_SERVER   "mqttServerUrl.cloud"
+#define MQTT_SERVER   "<mqttServerUrl>"
 #define MQTT_PORT     8883
-#define MQTT_USERNAME "yourMqttUser"
-#define MQTT_PASSWORD "yourMqttPass"
+#define MQTT_USERNAME "<yourMqttUser>"
+#define MQTT_PASSWORD "<yourMqttPass>"
 
 #endif
 ```
@@ -51,3 +51,18 @@ Create `secrets.h`:
 - Fingerprint sensor requires correct wiring (TX/RX).
 - Wi-Fi credentials must be configured in the sketch.
 - Debug output is available via Serial Monitor.
+
+## Serial commands:
+``` bash
+  help                 - show this
+  info                 - sensor info
+  count                - getTemplateCount() and persisted count
+  probe | p            - probe all slots 1..capacity
+  download <id>        - download & publish template for id
+  download-all         - bulk download templates
+  delete <id>          - delete template id
+  delall confirm       - empty DB (dangerous)
+  enrolled-count       - prints enrolledCount (persisted)
+  enroll <id>          - run enroll flow for id (same as 'e' key)
+  verify               - run verify flow (same as 'v' key)
+```
