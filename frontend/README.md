@@ -1,48 +1,60 @@
-# VoteForge - Secure Blockchain Voting Platform
+🗳️ VoteForge  :  Secure Blockchain Voting Platform
 
-VoteForge is a modern, decentralized voting application built on blockchain technology, featuring role-based access, biometric authentication simulation, and comprehensive poll management.
+VoteForge is a decentralized, blockchain-based voting platform that ensures transparency, security, and integrity in digital elections. It features biometric authentication, voter registration, and on-chain poll management, empowering both administrators and voters through trustless, verifiable processes.
 
-## 🏗️ Technical Stack
+🧩 Technical Stack
+Frontend
 
-- **Frontend**: React 18 + TypeScript + Vite
-- **Styling**: Tailwind CSS + Radix UI components + Custom gradient design system  
-- **Blockchain**: Hardhat local network + Ethers.js 6.x + MetaMask integration
-- **State Management**: Redux Toolkit with slices for wallet, polls, modals, and transactions
-- **Routing**: React Router DOM with role-based routes
-- **Forms**: React Hook Form + Zod validation
+Framework: React 18 + TypeScript + Vite
 
-## 🎨 Design System & Branding
+UI & Styling: Tailwind CSS + Radix UI + custom gradient system
 
-### VoteForge Brand Identity
-- **Primary**: Electric blockchain blue (hsl(234 89% 74%))
-- **Secondary**: Deep purple (hsl(262 83% 58%)) 
-- **Success**: Crypto green (hsl(160 84% 39%))
-- **Background**: Dark navy (hsl(225 15% 9%)) with gradient overlays
-- **Cards**: Glass-morphism effect with subtle borders and backdrop blur
+State Management: Redux Toolkit (slices for wallet, polls, modals, voters, and transactions)
 
-### Visual Effects
-- Floating orb animations with blur effects
-- Gradient buttons with hover lift animations
-- Blockchain pulse animation for fingerprint icons
-- Staggered reveal animations for content sections
-- Custom CSS gradients and smooth transitions
+Routing: React Router DOM (role-based navigation)
 
-## 🛣️ Application Routes
+Forms & Validation: React Hook Form + Zod schema validation
 
-- `/` — Landing page with role selection and biometric auth
-- `/voter-dashboard` — Voter portal for casting votes 
-- `/admin-dashboard` — Admin portal for poll management
-- `*` — 404 Not Found page
+Visualization: Recharts for election analytics
 
-## 🔐 Smart Contract Features
+Blockchain
 
-### DappVotes Contract Structures
+Smart Contracts: Solidity (Hardhat local network)
 
-```solidity
+Interaction: Ethers.js v6.x
+
+Wallet Integration: MetaMask (for authentication and transactions)
+
+🎨 Design System & Branding
+Element	Description	Example
+Primary	Electric Blockchain Blue	hsl(234 89% 74%)
+Secondary	Deep Purple	hsl(262 83% 58%)
+Success	Crypto Green	hsl(160 84% 39%)
+Background	Dark Navy + Gradient overlays	hsl(225 15% 9%)
+Cards	Glassmorphism — subtle borders + blur	—
+Visual Effects
+
+Floating orb and blockchain pulse animations
+
+Gradient hover transitions on buttons
+
+Fingerprint scan animation for biometric verification
+
+Staggered content reveal animations
+
+🛣️ Application Routes
+Route	Description
+/	Landing page with role selection and biometric login
+/voter-dashboard	Voter interface to view polls and cast votes
+/admin-dashboard	Admin interface for poll and voter management
+/register-voter	Admin-only route for registering voters with fingerprint
+*	404 Page for undefined routes
+🔐 Smart Contract Overview
+Contract: DappVotes
+Structures
 struct Poll {
     uint id;
-    string image;
-    string title; 
+    string title;
     string description;
     uint voteCount;
     uint contestantCount;
@@ -55,335 +67,265 @@ struct Poll {
 
 struct Contestant {
     uint id;
-    string image;
     string name;
     address account;
     uint votes;
 }
-```
 
-### Core Functions
+struct Voter {
+    address account;
+    string fingerprintHash;
+    bool registered;
+    bool hasVoted;
+}
 
-- `createPoll()` — Create new voting polls with time constraints
-- `updatePoll()` — Edit polls (only by director, before votes cast)
-- `deletePoll()` — Soft delete polls (only if no votes)
-- `contest()` — Register as contestant in a poll
-- `vote()` — Cast vote for contestant (with validation)
-- View functions: `getPolls()`, `getContestants()`, `hasUserVoted()`
+Core Functions
 
-### Security Features
+createPoll() — Create new poll
 
-- Role-based access (only poll director can modify)
-- Vote validation (one vote per address per poll)  
-- Time constraints (polls only active within start/end times)
-- Contestant validation (minimum 2 contestants required)
-- Immutable voting records on blockchain
+updatePoll() — Edit poll before voting begins
 
-## 🗳️ Voter Dashboard Features
+deletePoll() — Soft-delete poll if no votes
 
-- **Wallet Connection**: MetaMask integration with network validation
-- **Welcome Message**: Personalized greeting with wallet address
-- **Voting Stats**: Real-time poll counts and participation data
-- **Polls Grid**: Responsive layout showing available polls
-- **Real-time Status**: Active/Upcoming/Ended poll indicators
-- **Vote Confirmation**: MetaMask transaction signing for votes
-- **Vote History**: Track voting participation per poll
+contest() — Register contestant
 
-## ⚙️ Admin Dashboard Features  
+registerVoter() — Add voter via fingerprint (admin only)
 
-- **Analytics Overview**: Real blockchain data (no fake metrics)
-  - Total Elections count
-  - Active Elections count  
-  - Total Votes cast
-  - Average voter turnout
-- **Poll Management**: Create, delete polls with MetaMask confirmation
-- **Candidate Management**: Add minimum 2 candidates during poll creation
-- **Real-time Status**: Live poll status updates from blockchain
-- **Transaction Tracking**: Hash tracking for all admin actions
+vote() — Cast vote (only registered voters)
 
-## 🔗 Blockchain Integration
+View functions: getPolls(), getContestants(), getVoters(), hasUserVoted()
 
-### MetaMask Features
-- Detect MetaMask installation
-- Connect/disconnect wallet functionality
-- Enforce Hardhat network (31337)
-- Account and network change listeners
+Security Features
 
-### Transaction Handling
-- Loading states during blockchain interactions
-- Transaction hash tracking and display
-- Error handling with user-friendly messages
-- Success notifications with transaction details
+One vote per registered fingerprint
 
-### State Synchronization  
-- Redux updates after blockchain actions
-- Real-time polling data refresh
-- Wallet state persistence
-- Event listeners for wallet/network changes
+Voter whitelist (must be registered before voting)
 
-## 📋 Prerequisites
+Role-based access: only admins register voters
 
-- Node.js (v16 or higher)
-- npm or yarn package manager
-- MetaMask browser extension
+Time-window validation for polls
 
-## 🛠️ Installation & Setup
+Immutable on-chain data
 
-### 1. Clone and Install Dependencies
+🧑‍🗳️ Voter Dashboard Features
 
-```bash
+Biometric authentication (simulated fingerprint scanner)
+
+MetaMask wallet connection and validation
+
+Personalized voter dashboard with address and fingerprint ID
+
+Polls list with real-time status: Active / Upcoming / Ended
+
+Transaction confirmation via MetaMask popup
+
+Live vote count updates and confirmation hash display
+
+🧑‍💼 Admin Dashboard Features
+
+Biometric Admin Login: Simulated fingerprint scan for secure access
+
+Analytics Overview: Blockchain-sourced metrics
+
+Total elections created
+
+Active and upcoming polls
+
+Total votes and voter turnout
+
+🧍‍♂️ Voter Management
+
+Register New Voters:
+
+Fingerprint scan simulation
+
+Unique fingerprint hash generation
+
+On-chain registration via registerVoter()
+
+MetaMask confirmation for each new voter
+
+View Registered Voters:
+
+List of voter addresses and registration timestamps
+
+Search by fingerprint or wallet address
+
+🗳️ Poll Management
+
+Create, update, and delete polls
+
+Add contestants (minimum 2 per poll)
+
+Track poll lifecycle: Draft → Active → Ended
+
+Real-time blockchain sync for poll data
+
+Transaction tracking with success/error notifications
+
+🔗 Blockchain Integration
+MetaMask Support
+
+Auto-detect and prompt installation
+
+Wallet connect/disconnect UI
+
+Hardhat network enforcement (Chain ID: 31337)
+
+Real-time wallet/account listener events
+
+Transaction Management
+
+Loading spinners for pending blockchain calls
+
+Transaction hash display and clickable verification link
+
+Error feedback for rejected or failed transactions
+
+Success toast messages on completion
+
+State Synchronization
+
+Redux updates on each blockchain event
+
+Live refresh for polls and voters
+
+Persistent wallet and voter state
+
+📋 Prerequisites
+
+Node.js v16 or higher
+
+npm or yarn
+
+MetaMask browser extension
+
+🛠️ Installation & Setup
+1. Clone Repository
 git clone <repository-url>
-cd voteforge
+cd Biometric-Voting-System
+
+2. Install Dependencies
+cd frontend
 npm install
-```
 
-### 2. Install Blockchain Dependencies
-
-```bash
-cd blockchain
+3. Install Blockchain Dependencies
+cd ../blockchain
 npm install
-```
 
-### 3. Start Hardhat Network
-
-```bash
-cd blockchain
+4. Start Local Network
 npx hardhat node
-```
 
-This will start a local blockchain network at `http://127.0.0.1:8545` with 20 test accounts pre-loaded with 10,000 ETH each.
-
-### 4. Deploy Smart Contract
-
-In a new terminal:
-```bash
-cd blockchain  
+5. Deploy Smart Contract
 npx hardhat run scripts/deploy.js --network localhost
-```
 
-This will:
-- Deploy the DappVotes contract to the local network
-- Generate contract ABI and address in `src/contracts/DappVotes.json`
-- Display the contract address and deployment transaction
 
-### 5. Start Frontend Application
+ABI and contract address will be generated at frontend/src/contracts/DappVotes.json.
 
-In a new terminal:
-```bash
+6. Start Frontend
+cd ../frontend
 npm run dev
-```
 
-The application will be available at `http://localhost:5173`
 
-## 🔧 MetaMask Configuration
+App runs at http://localhost:5173
 
-### Add Hardhat Network to MetaMask
+🧭 Usage Guide
+🧑‍💼 Admin Workflow
 
-1. Open MetaMask and click "Add Network"
-2. Configure with these settings:
-   - **Network Name**: Hardhat Local
-   - **RPC URL**: `http://127.0.0.1:8545`
-   - **Chain ID**: `31337`
-   - **Currency Symbol**: `ETH`
+Log in via fingerprint simulation
 
-### Import Test Account
+Connect MetaMask wallet
 
-1. Copy a private key from the Hardhat node terminal output
-2. In MetaMask: Account menu → Import Account → Enter private key
-3. The account will have 10,000 ETH for testing
+Register new voters (biometric + wallet)
 
-## 📖 Usage Guide
+Create new polls and add contestants
 
-### Creating a Poll (Admin)
+Monitor poll progress and results
 
-1. Navigate to Admin Dashboard via landing page
-2. Complete biometric authentication (2s simulation)
-3. Connect MetaMask wallet
-4. Click "Create Election" 
-5. Fill out poll details:
-   - Title and description
-   - Start and end dates (future times required)
-   - Poll image URL (optional)
-   - Add minimum 2 candidates with names and avatar URLs
-6. Submit and confirm transaction in MetaMask
-7. Wait for blockchain confirmation
+🧑‍🗳️ Voter Workflow
 
-### Voting (Voter)
+Authenticate fingerprint
 
-1. Navigate to Voter Dashboard via landing page  
-2. Complete biometric authentication
-3. Connect MetaMask wallet
-4. Browse available active polls
-5. Click "Vote" on desired candidate
-6. Confirm transaction in MetaMask
-7. Receive confirmation with transaction hash
+Connect wallet
 
-### Poll Management (Admin)
+View eligible polls
 
-- **View Analytics**: Real-time blockchain data display
-- **Delete Polls**: Only possible if no votes have been cast
-- **Monitor Status**: See active, upcoming, and ended polls
-- **Track Participation**: View vote counts and candidate standings
+Cast vote once per poll
 
-## 🧪 Testing
+View transaction confirmation and live results
 
-### Run Smart Contract Tests
-
-```bash
+🧪 Testing
 cd blockchain
 npx hardhat test
-```
 
-Tests cover:
-- Poll lifecycle (create, update, delete)
-- Contestant registration
-- Voting mechanics and restrictions  
-- Time window enforcement
-- Permission validation
-- Edge cases and error handling
 
-### Test Coverage
+Tests include:
 
-- Poll creation with various parameters
-- Contestant management
-- Vote validation and restrictions
-- Time constraint enforcement  
-- Director permission controls
-- Error scenarios and edge cases
+Voter registration and fingerprint validation
 
-## 🔍 Troubleshooting
+Poll creation, update, deletion
 
-### Common Issues
+Vote casting and restrictions
 
-1. **MetaMask not connecting**
-   - Ensure Hardhat node is running
-   - Check network configuration (Chain ID: 31337)
-   - Refresh browser and try reconnecting
+Role and time constraint enforcement
 
-2. **Transaction failures**
-   - Verify sufficient ETH balance
-   - Check if poll is within active time window
-   - Ensure not voting twice in same poll
-   - Confirm wallet is connected to Hardhat network
+📁 Project Structure
+Biometric-Voting-System/
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── ui/
+│   │   │   ├── BiometricAuth.tsx
+│   │   │   ├── RegisterVoterDialog.tsx
+│   │   │   ├── WalletConnection.tsx
+│   │   │   ├── PollCard.tsx
+│   │   │   └── CreatePollDialog.tsx
+│   │   ├── pages/
+│   │   │   ├── Index.tsx
+│   │   │   ├── VoterDashboard.tsx
+│   │   │   ├── AdminDashboard.tsx
+│   │   │   ├── RegisterVoterPage.tsx
+│   │   │   └── NotFound.tsx
+│   │   ├── services/
+│   │   │   ├── contractService.ts
+│   │   │   ├── walletService.ts
+│   │   │   └── voterService.ts
+│   │   ├── store/
+│   │   │   ├── index.ts
+│   │   │   └── slices/
+│   │   ├── contracts/
+│   │   ├── hooks/
+│   │   └── lib/
+│   ├── public/
+│   └── package.json
+│
+└── blockchain/
+    ├── contracts/
+    ├── scripts/
+    ├── test/
+    └── hardhat.config.js
 
-3. **Contract not found error**  
-   - Redeploy contract: `npx hardhat run scripts/deploy.js --network localhost`
-   - Refresh frontend application
-   - Check that `src/contracts/DappVotes.json` exists
+🛡️ Security Highlights
 
-4. **Time-related errors**
-   - Ensure start time is in the future
-   - Verify end time is after start time
-   - Check system clock synchronization
+Fingerprint-based voter registration (simulated biometric hash)
 
-### Reset Development Environment
+Immutable on-chain registry for voters and polls
 
-If you encounter persistent issues:
+Role-based access control (admin vs voter)
 
-```bash
-# Terminal 1: Restart Hardhat node
-cd blockchain
-npx hardhat node
+One vote per registered fingerprint
 
-# Terminal 2: Redeploy contract  
-cd blockchain
-npx hardhat run scripts/deploy.js --network localhost
+Hardened input validation and safe transaction flow
 
-# Terminal 3: Restart frontend
-npm run dev
-```
+Restricted network (Hardhat or designated testnet only)
 
-## 🛡️ Security Features
+👨‍💻 Author
+Twange Chansa ,Ziba Nyangulu , Farai Rubvuta
+Project: Biometric Voting System (VoteForge)
 
-### On-Chain Security
-- Immutable vote records
-- Time-gated poll access
-- Single vote per address enforcement
-- Director-only poll management
-- Contestant validation requirements
 
-### Frontend Security  
-- MetaMask transaction signing
-- Network validation (Hardhat only)
-- Input validation and sanitization
-- Error boundary implementation
-- Secure state management
+📜 License
 
-## 🔧 Development Commands
+Licensed under the MIT License — for educational and open development use.
 
-### Blockchain Development
-```bash
-cd blockchain
-
-# Start local network
-npx hardhat node
-
-# Compile contracts
-npx hardhat compile
-
-# Run tests
-npx hardhat test
-
-# Deploy to local network
-npx hardhat run scripts/deploy.js --network localhost
-
-# Clean artifacts
-npx hardhat clean
-```
-
-### Frontend Development
-```bash
-# Start development server
-npm run dev
-
-# Build for production  
-npm run build
-
-# Preview production build
-npm run preview
-
-# Run linting
-npm run lint
-```
-
-## 📁 Project Structure
-
-```
-voteforge/
-├── src/
-│   ├── components/           # Reusable UI components
-│   │   ├── ui/              # Shadcn/ui components
-│   │   ├── BiometricAuth.tsx
-│   │   ├── WalletConnection.tsx
-│   │   ├── PollCard.tsx
-│   │   └── CreatePollDialog.tsx
-│   ├── pages/               # Route components
-│   │   ├── Index.tsx
-│   │   ├── VoterDashboard.tsx
-│   │   ├── AdminDashboard.tsx
-│   │   └── NotFound.tsx
-│   ├── services/            # Business logic
-│   │   ├── contractService.ts
-│   │   └── walletService.ts
-│   ├── store/               # Redux state management
-│   │   ├── index.ts
-│   │   └── slices/
-│   ├── contracts/           # Generated contract artifacts
-│   ├── hooks/               # Custom React hooks
-│   └── lib/                 # Utilities
-├── blockchain/              # Hardhat blockchain setup
-│   ├── contracts/           # Solidity smart contracts
-│   ├── scripts/             # Deployment scripts
-│   ├── test/                # Contract tests
-│   └── hardhat.config.js    # Hardhat configuration
-├── public/                  # Static assets
-└── package.json
-```
-
-## 📄 License
-
-MIT License - see LICENSE file for details.
-
----
-
-**VoteForge**: Securing democracy through blockchain technology. 🗳️⛓️
+VoteForge — Building trust in digital democracy through blockchain and biometrics. 🔗
