@@ -40,6 +40,8 @@ void publishResult(uint16_t id, bool success, const String& message);
 
 // New: publish raw template buffer (will Base64 encode internally)
 void publishTemplate(uint16_t id, const uint8_t* buffer, size_t length);
+// New: hash raw bytes directly
+String hashTemplate(const uint8_t* data, size_t len);
 
 void sendHeartbeat();
 void reconnect();

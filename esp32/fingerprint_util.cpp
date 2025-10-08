@@ -3,7 +3,9 @@
 #include "fingerprint_util.h"
 #include "messaging.h"
 #include "fingerprint.h"  // for enrolledCount (extern)
+#include "mbedtls/sha256.h"
 #include <Arduino.h>
+
 
 extern HardwareSerial mySerial;
 extern Adafruit_Fingerprint finger;

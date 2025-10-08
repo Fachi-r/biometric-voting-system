@@ -39,7 +39,8 @@ uint8_t enrollFingerprint(uint16_t id) {
   int retries = 0;
   const int MAX_RETRIES = 3;
 
-  uint8_t templateBuffer[512];
+  static uint8_t templatePayload[TEMPLATE_PAYLOAD_SIZE];
+  static uint8_t templateBuffer[TEMPLATE_PAYLOAD_SIZE];
 
   while (true) {
     switch (state) {
@@ -119,9 +120,8 @@ uint8_t enrollFingerprint(uint16_t id) {
 
       case STATE_DOWNLOAD_TEMPLATE:
         publishEnrolmentStatus(STATUS_DOWNLOADING_TEMPLATE, "Downloading template...");
-        // Use the new publishTemplate that accepts a raw buffer
-        if (downloadTemplate(id, templateBuffer)) {
-          publishTemplate(id, templateBuffer, TEMPLATE_SIZE);
+        if (downloadTemplateById(id, 3)) {
+          // downloadTemplateById already published the template hash (and validated the payload)
           state = STATE_DONE;
         } else {
           publishEnrolmentStatus(STATUS_ERROR, "Template download failed for ID " + String(id));

@@ -2,7 +2,8 @@
 #include <PubSubClient.h>
 #include "secrets.h"
 #include "messaging.h"
-#include <base64.h>  // Arduino Base64 helper
+#include <mbedtls/sha256.h>  // Arduino HexHash helper
+#include <ArduinoJson.h>
 
 // Reference MQTT client defined in .ino
 extern PubSubClient client;
@@ -35,11 +36,28 @@ void publishResult(uint16_t id, bool success, const String& message) {
   Serial.println("MQTT Published (result): " + payload);
 }
 
+
 void publishTemplate(uint16_t id, const uint8_t* buffer, size_t length) {
-  String encoded = base64::encode(buffer, length);  // returns Arduino String
-  String payload = "{\"id\":" + String(id) + ",\"template\":\"" + encoded + "\"}";
-  client.publish(TOPIC_FP_TEMPLATES, payload.c_str());
-  Serial.println("MQTT Published (template, base64): " + payload);
+  // Hash the raw template bytes (no encode->decode nonsense)
+  String hash = hashTemplate(buffer, length);
+
+  // Build JSON: { "id": <id>, "template": "<hex-hash>" }
+  StaticJsonDocument<256> doc;
+  doc["id"] = id;
+  doc["template"] = hash;
+
+  char out[512];
+  size_t outLen = serializeJson(doc, out, sizeof(out));
+
+  bool ok = client.publish(TOPIC_FP_TEMPLATES, out, outLen);
+  Serial.printf("publish template (hash only) id=%u len=%u -> ok=%d client_state=%d\n",
+                id, (unsigned)outLen, ok, client.state());
+
+  if (!ok) {
+    publishEnrolmentStatus(STATUS_ERROR, "Template-hash publish failed");
+  } else {
+    Serial.printf("MQTT Published (template hash): %s\n", out);
+  }
 }
 
 void publishEnrolmentCount() {
@@ -69,4 +87,19 @@ void reconnect() {
       delay(5000);
     }
   }
+}
+
+// --- Hashing Function ---
+String hashTemplate(const uint8_t* data, size_t len) {
+  // Compute SHA-256 of raw bytes
+  unsigned char hash[32];
+  mbedtls_sha256((const unsigned char*)data, len, hash, 0);  // 0 => SHA-256 (not 224)
+
+  // Convert to hex string
+  char hexBuf[65];
+  for (int i = 0; i < 32; ++i) {
+    sprintf(hexBuf + (i * 2), "%02x", hash[i]);
+  }
+  hexBuf[64] = '\0';
+  return String(hexBuf);
 }
