@@ -1,138 +1,173 @@
-🗳️ VoteForge Blockchain Module
+Here’s the text formatted properly in Markdown for documentation or a GitHub README:
 
-Biometric Voting System — Solidity · Hardhat · Ethers.js · Node.js
+---
 
-🚀 Overview
+# 🗳️ VoteForge Blockchain Module
 
-The VoteForge Blockchain Module is the decentralized backend powering the Biometric Voting System.
-It leverages Solidity, Hardhat, and Ethers.js to deploy, interact with, and test smart contracts that ensure secure, transparent, and tamper-proof elections on a local Ethereum blockchain.
+**Biometric Voting System** — *Solidity · Hardhat · Ethers.js · Node.js*
 
-This setup provides a local Hardhat network for testing, contract deployment automation, and real-time event monitoring for all voting-related activities — from voter registration to vote casting.
+---
 
-🧠 Architecture
-Core Components
-📝 Smart Contract — DappVotes.sol
+## 🚀 Overview
 
-Implements:
+The **VoteForge Blockchain Module** is the decentralized backend powering the Biometric Voting System.
+It leverages **Solidity**, **Hardhat**, and **Ethers.js** to deploy, interact with, and test smart contracts that ensure secure, transparent, and tamper-proof elections on a local Ethereum blockchain.
 
-Voter Registration & Authentication
+This setup provides:
 
-Links wallet addresses to biometric fingerprint IDs
+* A local **Hardhat** network for testing
+* Automated contract deployment
+* Real-time event monitoring for all voting-related activities — from voter registration to vote casting
 
-Prevents duplicate registrations
+---
 
-Allows voter lookup by address or ID
+## 🧠 Architecture
 
-Poll Management
+### **Core Components**
 
-Create, update, and delete polls
+#### 📝 Smart Contract — `DappVotes.sol`
 
-Track active/deleted status
+**Implements:**
 
-Retrieve all or individual poll details
+##### **Voter Registration & Authentication**
 
-Candidate Management
+* Links wallet addresses to biometric fingerprint IDs
+* Prevents duplicate registrations
+* Allows voter lookup by address or ID
 
-Register candidates per poll with name, image, and wallet
+##### **Poll Management**
 
-Prevent duplicates and ensure valid associations
+* Create, update, and delete polls
+* Track active/deleted status
+* Retrieve all or individual poll details
 
-Voting System
+##### **Candidate Management**
 
-One-vote-per-poll enforcement
+* Register candidates per poll with name, image, and wallet
+* Prevent duplicates and ensure valid associations
 
-Immutable and anonymous vote recording
+##### **Voting System**
 
-Real-time tallying and event logging
+* One-vote-per-poll enforcement
+* Immutable and anonymous vote recording
+* Real-time tallying and event logging
 
-⚙️ Hardhat Development Environment
+---
 
-Local Ethereum blockchain simulation
+### ⚙️ Hardhat Development Environment
 
-Contract compilation and deployment
+* Local Ethereum blockchain simulation
+* Contract compilation and deployment
+* Automated testing and event monitoring
 
-Automated testing and event monitoring
+---
 
-🪶 Event Listener — listen.js
+### 🪶 Event Listener — `listen.js`
 
-Monitors contract events in real-time
+* Monitors contract events in real-time
+* Displays formatted logs for voter registration, poll creation, vote casting, etc.
+* Aids in debugging and backend validation
 
-Displays formatted logs for voter registration, poll creation, vote casting, etc.
+---
 
-Aids in debugging and backend validation
+## 🧰 Technology Stack
 
-🧰 Technology Stack
-Component	Version	Purpose
-Solidity	^0.8.27	Smart contract language
-Hardhat	2.22.18	Ethereum dev environment
-Ethers.js	6.15.0	Blockchain interaction
-Chai	—	Testing assertions
-Node.js	v16+	Runtime environment
-💻 Getting Started
-1️⃣ Install Dependencies
+| Component     | Version | Purpose                  |
+| ------------- | ------- | ------------------------ |
+| **Solidity**  | ^0.8.27 | Smart contract language  |
+| **Hardhat**   | 2.22.18 | Ethereum dev environment |
+| **Ethers.js** | 6.15.0  | Blockchain interaction   |
+| **Chai**      | —       | Testing assertions       |
+| **Node.js**   | v16+    | Runtime environment      |
+
+---
+
+## 💻 Getting Started
+
+### 1️⃣ Install Dependencies
+
+```bash
 npm install
-
+```
 
 Make sure Hardhat is installed locally:
 
+```bash
 npm install --save-dev hardhat
+```
 
-2️⃣ Start Local Blockchain
+---
+
+### 2️⃣ Start Local Blockchain
 
 Start a local Hardhat node with 20 pre-funded accounts:
 
+```bash
 npm run node
-
+```
 
 You’ll see test accounts and private keys printed in the terminal.
 
-3️⃣ Export Test Accounts (Optional)
+---
 
-A script (scripts/deploy.js) connects to the node and exports all available test accounts to accounts.json.
+### 3️⃣ Export Test Accounts (Optional)
 
-Run:
+A script (`scripts/deploy.js`) connects to the node and exports all available test accounts to `accounts.json`.
 
+```bash
 npx hardhat run scripts/deploy.js --network localhost
+```
 
+This generates an `accounts.json` file containing addresses and private keys — useful for MetaMask imports.
 
-This generates an accounts.json file containing addresses and private keys — useful for MetaMask imports.
+---
 
-4️⃣ Deploy Contracts
+### 4️⃣ Deploy Contracts
 
-Contracts are located in contracts/.
+Contracts are located in the `contracts/` directory.
 
 To compile and deploy:
 
+```bash
 npm run deploy
-
+```
 
 This will:
 
-Compile DappVotes.sol
+* Compile `DappVotes.sol`
+* Deploy it to `localhost:8545`
+* Log the contract address and ABI
+* Copy the ABI to `../src/contracts/DappVotes.json` for frontend use
 
-Deploy it to localhost:8545
+---
 
-Log the contract address and ABI
-
-Copy the ABI to ../src/contracts/DappVotes.json for frontend use
-
-5️⃣ Start Event Listener (Optional)
+### 5️⃣ Start Event Listener (Optional)
 
 Monitor real-time blockchain events:
 
+```bash
 npm run listen
-
+```
 
 The listener displays all contract events (e.g., voter registration, poll creation, vote casting) with timestamps and color-coded output.
 
-🧩 Useful Commands
-Command	Description
-npm run compile	Compiles smart contracts
-npm run node	Starts local Hardhat blockchain
-npm run deploy	Deploys contracts to local node
-npm test	Runs all test scripts
-npx hardhat accounts	Lists available accounts
-🧾 Project Structure
+---
+
+## 🧩 Useful Commands
+
+| Command                | Description                     |
+| ---------------------- | ------------------------------- |
+| `npm run compile`      | Compiles smart contracts        |
+| `npm run node`         | Starts local Hardhat blockchain |
+| `npm run deploy`       | Deploys contracts to local node |
+| `npm test`             | Runs all test scripts           |
+| `npx hardhat accounts` | Lists available accounts        |
+
+---
+
+## 🧾 Project Structure
+
+```
 blockchain/
 ├── contracts/
 │   └── DappVotes.sol
@@ -147,81 +182,97 @@ blockchain/
 ├── package.json
 ├── accounts.json (generated)
 └── README.md
+```
 
-🌐 Network Configuration
+---
 
-Hardhat Local Network
+## 🌐 Network Configuration
 
+### **Hardhat Local Network**
+
+```json
 {
   "chainId": 31337,
   "url": "http://127.0.0.1:8545"
 }
+```
 
+### **MetaMask Connection**
 
-MetaMask Connection
+1. Open MetaMask → Add Network
+2. Enter the following:
 
-Open MetaMask → Add Network
+| Field               | Value                                          |
+| ------------------- | ---------------------------------------------- |
+| **Network Name**    | Hardhat Local                                  |
+| **RPC URL**         | [http://127.0.0.1:8545](http://127.0.0.1:8545) |
+| **Chain ID**        | 31337                                          |
+| **Currency Symbol** | ETH                                            |
 
-Enter:
+Import private keys from `accounts.json`.
 
-Network Name: Hardhat Local
+---
 
-RPC URL: http://127.0.0.1:8545
-
-Chain ID: 31337
-
-Currency Symbol: ETH
-
-Import private keys from accounts.json
-
-🧪 Testing
+## 🧪 Testing
 
 Run the full test suite:
 
+```bash
 npm test
+```
 
+**Includes tests for:**
 
-Includes tests for:
+* Voter registration
+* Poll creation, updates, and deletion
+* Candidate addition
+* Vote casting and validation
+* Event emission
+* Unauthorized access prevention
 
-Voter registration
+---
 
-Poll creation, updates, and deletion
+## 🛠️ Troubleshooting
 
-Candidate addition
+| Problem                  | Solution                                                           |
+| ------------------------ | ------------------------------------------------------------------ |
+| Contract fails to deploy | Ensure Hardhat node is running first                               |
+| MetaMask wrong nonce     | Reset account (Settings → Advanced → Reset)                        |
+| Events not appearing     | Restart `listen.js` and ensure contract address matches deployment |
+| Accounts out of ETH      | Restart Hardhat node to reset balances                             |
 
-Vote casting and validation
+---
 
-Event emission
+## ⚙️ Development Workflow
 
-Unauthorized access prevention
-
-🛠️ Troubleshooting
-Problem	Solution
-Contract fails to deploy	Ensure Hardhat node is running first
-MetaMask wrong nonce	Reset account (Settings → Advanced → Reset)
-Events not appearing	Restart listen.js and ensure contract address matches deployment
-Accounts out of ETH	Restart Hardhat node to reset balances
-
-
-⚙️ Development Workflow
+```bash
 # Terminal 1
-npm run node / npx run node 
+npm run node   # or npx hardhat node
 
 # Terminal 2
-npm run deploy / npx hardhat run scripts/deploy.js --network localhost
-
+npm run deploy   # or npx hardhat run scripts/deploy.js --network localhost
 
 # Terminal 3
 npm run listen
+```
 
-🧩 Gas Optimization
-Operation	Gas (approx.)
-Register Voter	150,000
-Create Poll	200,000
-Add Candidate	120,000
-Cast Vote	80,000
-👨‍💻 Author
+---
 
-Ziba Nyangulu
-Project: Biometric Voting System (VoteForge Blockchain Backend)
-Stack: Solidity · Hardhat · Ethers.js · Node.js
+## 🧩 Gas Optimization
+
+| Operation      | Gas (approx.) |
+| -------------- | ------------- |
+| Register Voter | 150,000       |
+| Create Poll    | 200,000       |
+| Add Candidate  | 120,000       |
+| Cast Vote      | 80,000        |
+
+---
+
+## 👨‍💻 Author
+
+**Ziba Nyangulu**
+**Project:** Biometric Voting System (*VoteForge Blockchain Backend*)
+**Stack:** Solidity · Hardhat · Ethers.js · Node.js
+
+---
